@@ -1,5 +1,5 @@
 from IPython.display import Markdown, display
-from playsound import playsound
+#from playsound import playsound
 import os
 
 #--- Common Libraries
@@ -61,14 +61,14 @@ class Helper():
         }"""
     
     #--- Printing with colors
-    def printer(self, text, color= 'yellow', time= True, play= True):
+    def printer(self, text, color= 'yellow', time= False, play= True):
         (tstr, t) = self.get_time_now()
         if time == True:
             if self.type == "py":
-                print(f"{self.colors[color]}{tstr} |{text}{self.Reset}")
+                print(f"{self.colors[color]}{tstr} | {text}{self.Reset}")
             
             else:
-                display(Markdown(f"{self.colors[color]}{tstr} |{text}{self.Reset}"))
+                display(Markdown(f"{self.colors[color]}{tstr} | {text}{self.Reset}"))
         else:
             if self.type == "py":
                 print(f"{self.colors[color]}{text}{self.Reset}")
@@ -96,13 +96,27 @@ class Helper():
     #--- Copy one file into a new path
     def duplicate_file(self, reference_file, copied_file):
         shutil.copy2(reference_file, copied_file)
+    
+    #--- Create a file base on the path
+    def create_file(self, file_path):
+        # If folder doesn't exist, creates folder
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
 
     #--- Extract the first number in a string
     def extract_int(self, string):
         integer = int(re.findall('\d+', string)[0])
         return integer
     
-    def kill(self):
+    def kill(self, name):
         #--- Killing the program
-        self.printer(f"---- Digital Twin killed ----", 'red')
+        self.printer(f"---- {name} killed ----", 'red')
         sys.exit()
+
+    def convert_stringVect_to_listVect(self, stringVect):
+        return json.loads(stringVect)
+    
+    def convert_tuple_vector_to_list(self, tuple_vector):
+        for i in range(len(tuple_vector)):
+            tuple_vector[i] = tuple_vector[i][0]
+        return tuple_vector

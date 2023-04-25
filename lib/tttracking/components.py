@@ -3,15 +3,17 @@ helper = Helper()
 
 
 class Task():
-    def __ini__(self, name, tags= None, autostart= None, cluster= None):
+    def __init__(self, name, id, tags= None, autostart= None, cluster= None):
         #--- Initialization
         self.name = name
+        self.id = id
         self.tags = tags
         self.cluster = cluster
+        self.start_timestamp= None
 
         #--- Time star configuration
         if autostart == True:
-            (t, tstr) = helper.get_time_now() 
+            (tstr, t) = helper.get_time_now() 
             self.start_timestamp = t
             self.start_string = tstr
 
@@ -37,12 +39,12 @@ class Task():
         """
 
         #-- Get current time
-        (t, tstr) = helper.get_time_now()
+        (tstr, t) = helper.get_time_now()
         self.start_timestamp = t
         self.start_string = tstr
 
         ####################################################
-        helper.printer(f"Tasks {self.name} started", 'green')
+        helper.printer(f"Task '{self.name}' started", color='green', time= True)
         ####################################################
 
     def stop(self):
@@ -50,12 +52,12 @@ class Task():
         Register the time in which the tasks was stopped to subtract in the final end time
         """
         #-- Get current time
-        (t,tstr) = helper.get_time_now()
+        (tstr,t) = helper.get_time_now()
         self.start_stop_timestamp = t
         self.flag_stop_time= True
 
         ####################################################
-        helper.printer(f"Tasks {self.name} stopped", 'red')
+        helper.printer(f"Task '{self.name}' stopped", color='red', time= True)
         ####################################################
     
     def restart(self):
@@ -63,7 +65,7 @@ class Task():
         Add the end time of the previous stop, add it in stop list, reset stop parameters
         """
         #-- Get current time
-        (t, tstr) = helper.get_time_now()
+        (tstr, t) = helper.get_time_now()
         self.end_stop_timestamp = t
 
         #--- Interval of stop
@@ -75,7 +77,7 @@ class Task():
         self.end_stop_timestamp = None
 
         ####################################################
-        helper.printer(f"Tasks {self.name} re-started")
+        helper.printer(f"Task '{self.name}' re-started", time= True)
         ####################################################
 
     def finish(self):
@@ -84,7 +86,7 @@ class Task():
         """
 
         #-- Get current time
-        (t, tstr) = helper.get_time_now()
+        (tstr, t) = helper.get_time_now()
         self.end_timestamp = t
         self.end_string = tstr
 
@@ -100,22 +102,32 @@ class Task():
         self.worked_time_clean = self.worked_time_raw - self.total_stopped
 
         ####################################################
-        helper.printer(f"Tasks {self.name} finished!", 'green')
-        helper.printer(f"Raw Time: {self.worked_time_raw}, Clean Time: {self.worked_time_clean}, Stopped Time: {self.stopped_time}")
+        helper.printer(f"Task '{self.name}' done!", color='green', time= True)
+        helper.printer(f"Raw Time: {self.worked_time_raw}, Clean Time: {self.worked_time_clean}, Stopped Time: {self.total_stopped}")
         ####################################################
 
     # --------------------- Get Methods ---------------------
     def get_name(self):
         return self.name
-    def get_start_time(self):
-        return (self.start_timestamp, self.start_string)
-    def get_end_time(self):
-        return (self.end_timestamp, self.end_string)
+    def get_id(self):
+        return self.id
+    def get_start_timestamp(self):
+        return self.start_timestamp
+    def get_start_string(self):
+        return self.start_string
+    def get_end_timestamp(self):
+        return self.end_timestamp
+    def get_end_string(self):
+        return self.end_string
     def get_tags(self):
         return self.tags
-    def get_worked_time(self):
-        return (self.worked_time_clean, self.worke)
-    def stopped_time(self):
+    def get_cluster(self):
+        return self.cluster
+    def get_worked_time_clean(self):
+        return self.worked_time_clean
+    def get_worked_time_raw(self):
+        return self.worked_time_raw
+    def get_stopped_time(self):
         return self.total_stopped
 
 class Cluster():
