@@ -9,14 +9,18 @@ class interfaceDB():
         self.name = name
 
         #--- Database Path Assigned
-        self.namedb = f"databases/{self.name}.db"
+        self.namedb = f"databases/TTtracking.db"
         self.helper.create_file("databases")
         
 
         #--- Table creation
         if name == "task":
             self.create_task_table()
+
+        if name == "cluster":
+            self.create_cluster_table()
     
+    # ============== TASK MANAGEMENT ==============
     # --- create a tasks table ---
     def create_task_table(self):
         with sqlite3.connect(self.namedb) as db:
@@ -34,6 +38,7 @@ class interfaceDB():
                 )
                 """
             )
+    
     def insert_task(self, task):
         name = task.get_name()
         worked_clean = task.get_worked_time_clean()
@@ -87,9 +92,12 @@ class interfaceDB():
                 SELECT MAX(task_id) FROM task_table
                 """
             ).fetchone()[0]
-
-            next_id = current_id + 1
-            return next_id
+            
+            if current_id == None:
+                return 1
+            else:
+                next_id = current_id + 1
+                return next_id
         
     def update_task(self, task):
         name = task.get_name()
@@ -116,4 +124,38 @@ class interfaceDB():
                 id
                 )
             )
+    # ================================================
 
+    # ============== CLUSTER - TAG MANAGEMENT ==============
+    # --- create cluster table ---
+    def create_cluster_table(self):
+        with sqlite3.connect(self.namedb) as db:
+            db.execute(
+                """
+                CREATE TABLE IF NOT EXISTS cluster_table (
+                cluster_id INTEGER PRIMARY KEY,
+                name TEXT,
+                accumulated_worked_clean INTEGER,
+                accumulated_stop INTEGER
+                )
+                """
+            )
+ 
+    # --- insert a new cluster ---
+    def insert_cluster(self, cluster_name):
+        with sqlite3.connect(self.namedb) as db:
+            db.execute(
+                """
+                INSERT INTO cluster_table (name) VALUES (?)
+                """, (cluster_name,)
+            )
+
+    def get_clusters(self):
+        with sqlite3.connect(self.namedb) as db:
+            clusters= db.execute(
+                """
+                SELECT cluster_id, name FROM cluster_table
+                """
+            ).fetchall()
+
+            return clusters

@@ -10,9 +10,11 @@ class TTtracker():
         self.name = name
         self.condition = True
         self.current_tasks = []
+        self.working_task = None
 
         # ----- Database Management -----
         self.task_interfaceDB = interfaceDB("task")
+        self.cluster_interfaceDB = interfaceDB("cluster")
 
 
         # ----- COMMANDS DICTIONARY -----
@@ -23,6 +25,7 @@ class TTtracker():
             "stop": self.command_stop_task,
             "restart": self.command_restart_task,
             "finish": self.command_finish_task,
+            "create": self.command_create,
             "help": self.command_help,
             "kill": self.command_kill
         }
@@ -44,20 +47,6 @@ class TTtracker():
                 self.helper.printer(f"------ [ERROR] '{main_command}' is not an available command! ------", 'red')
                 self.commands_store["help"](secondary_command)
 
-
-    # ===================== HELPING FUNCTIONS =====================
-    
-    def extractor(self, command):
-        """
-        Extract all the words of the command phrase
-        """
-        words_extracted = command.split()
-
-        #--- Segmentation
-        main_command = words_extracted[0]
-        secondary_command = words_extracted[1:]
-        
-        return (main_command, secondary_command)
 
     # ===================== COMMANDS FUNCTIONS =====================
 
@@ -95,15 +84,38 @@ class TTtracker():
 
     def command_show_task(self, secondary_command):
         """
-        Show all the tasks that don't have a start_time
+        'show': Show all the tasks that don't have a start_time
+        'show clusters': Show all created clusters
+        'shows cluster_name': Show all tasks created with the cluster cluster_name
         """
-        #--- Get open tasks
-        open_tasks = self.task_interfaceDB.get_open_tasks()
         
-        self.helper.printer("Showing all open tasks:")
-        print("   TASKS IDs   |   TASK NAME")
-        for taks in open_tasks:
-            print(f"       {taks[0]}       |   {taks[1]}")
+        # --- No secondary command
+        if len(secondary_command) == 0:
+            #--- Get open tasks
+            open_tasks = self.task_interfaceDB.get_open_tasks()
+            
+            self.helper.printer("Showing all open tasks:")
+            print("   TASKS IDs   |   TASK NAME")
+            for taks in open_tasks:
+                if taks[0] < 10:
+                    print(f"       {taks[0]}       |   {taks[1]}")
+                elif taks[0] > 10:
+                    print(f"      {taks[0]}       |   {taks[1]}")
+
+        # --- 'show clusters' or 'show cluster'
+        elif secondary_command[0] == "clusters" or "cluster":
+            #--- Get clusters IDs and Names from the database
+            clusters = self.cluster_interfaceDB.get_clusters()
+            
+            #--- Interface
+            self.helper.printer("Showing all clusters:")
+            print("   CLUSTER ID  |   CLUSTER NAME")
+            for cluster in clusters:
+                if cluster[0] < 10:
+                    print(f"       {cluster[0]}       |   {cluster[1]}")
+                elif cluster[0] > 10:
+                    print(f"      {cluster[0]}       |   {cluster[1]}")
+
 
     def command_start_task(self,secondary_command):
         """
@@ -130,7 +142,7 @@ class TTtracker():
             task_property = self.task_interfaceDB.get_property(id)
 
             #--- Create task object
-            new_task = Task(
+            task = Task(
                 name= task_property[1],
                 id= id,
                 tags= task_property[4],
@@ -138,23 +150,29 @@ class TTtracker():
             )
 
             #--- Start clock
-            new_task.start()
+            task.start()
 
             #--- Add the current tasks
-            self.current_tasks.append(new_task)
+            self.current_tasks.append(task)
 
             #--- Update database
-            self.task_interfaceDB.update_task(new_task)
+            self.task_interfaceDB.update_task(task)
         
         else:
             #--- Get the most recent task
-            current_task = self.current_tasks[-1]
+            task = self.current_tasks[-1]
 
             #--- Start clock
-            current_task.start()
+            task.start()
 
             #--- Update database
-            self.task_interfaceDB.update_task(current_task)
+            self.task_interfaceDB.update_task(task)
+
+        #--- Update position in current task
+        self.update_positioning(task.get_id())
+
+        #--- Update the current working task
+        self.working_task = task
 
     def command_stop_task(self, secondary_command):
         """
@@ -178,11 +196,11 @@ class TTtracker():
 
         #--- Secondary Tasks Empty
         if len(secondary_command) == 0:
-            #--- Get the current task
-            current_task = self.current_tasks[-1]
-
             #--- Stop the task
-            current_task.stop()
+            self.working_task.stop()
+
+            #--- Update database
+            self.task_interfaceDB.update_task(self.working_task)
 
         else:
             task_id = int(secondary_command[0])
@@ -191,17 +209,20 @@ class TTtracker():
                 if current_task.get_id() == task_id:
                     current_task.stop()
 
-        #--- Update database
-        self.task_interfaceDB.update_task(current_task)
+            #--- Update position in current task
+            self.update_positioning(current_task.get_id())
+
+            #--- Update database
+            self.task_interfaceDB.update_task(current_task)
 
     def command_restart_task(self, secondary_command):
         #--- Secondary Tasks Empty
         if len(secondary_command) == 0:
-            #--- Get the current task
-            current_task = self.current_tasks[-1]
-
             #--- Restart the task
-            current_task.restart()
+            self.working_task.restart()
+
+            #--- Update database
+            self.task_interfaceDB.update_task(self.working_task)            
 
         else:
             task_id = int(secondary_command[0])
@@ -210,17 +231,20 @@ class TTtracker():
                 if current_task.get_id() == task_id:
                     current_task.restart()
 
-        #--- Update database
-        self.task_interfaceDB.update_task(current_task)
+            #--- Update database
+            self.task_interfaceDB.update_task(current_task)
+
+            #--- Update position in current task
+            self.update_positioning(current_task.get_id())
 
     def command_finish_task(self, secondary_command):
         #--- Secondary Tasks Empty
         if len(secondary_command) == 0:
-            #--- Get the current task
-            current_task = self.current_tasks[-1]
-
             #--- Finish the task
-            current_task.finish()
+            self.working_task.finish()
+
+            #--- Update database
+            self.task_interfaceDB.update_task(self.working_task)
 
         else:
             task_id = int(secondary_command[0])
@@ -229,10 +253,60 @@ class TTtracker():
                 if current_task.get_id() == task_id:
                     current_task.finish()
 
-        #--- Update database
-        self.task_interfaceDB.update_task(current_task)
+            #--- Update database
+            self.task_interfaceDB.update_task(current_task)
+
+            #--- Update position in current task
+            self.update_positioning(current_task.get_id())
+
+    def command_create(self,secondary_command):
+        """
+        Create a new cluster or a new tag depending of the second word
+
+        'create cluster <clustar_name>'
+        'create tag <tag_name>'
+        """
+
+        #--- Check to create a cluster
+        if secondary_command[0] == 'cluster':
+            cluster_name = secondary_command[1:]
+            cluster_name = self.helper.convert_list_to_string(cluster_name)
+
+            #--- Add it into the database
+            self.cluster_interfaceDB.insert_cluster(cluster_name)
+
+
+        #--- Check to create a tag
+        elif secondary_command[0] == 'tag':
+            pass
+
+        #--- If it's nothing raise a message
+        else:
+            self.helper.printer(f"[ERROR] The sub-command '{secondary_command[0]}' is not valid.", 'red')
+            self.helper.printer(f"Available sub-command to mix with 'create':")
+            print("|--- 'create cluster my new cluster': creates a new cluster")
+            print("|--- 'create tag my new tag': creates a new tag")
 
     def command_kill(self, secondary_command):
         self.helper.kill(self.name)
 
+    # ===================== HELPING FUNCTIONS =====================
     
+    def extractor(self, command):
+        """
+        Extract all the words of the command phrase
+        """
+        words_extracted = command.split()
+
+        #--- Segmentation
+        main_command = words_extracted[0]
+        secondary_command = words_extracted[1:]
+        
+        return (main_command, secondary_command)
+    
+    def update_positioning(self, id):
+        for task in self.current_tasks:
+            if task.get_id() == id:
+                index= self.current_tasks.index(task)
+                self.current_tasks.pop(index)
+                self.current_tasks.append(task)

@@ -120,3 +120,7 @@ class Helper():
         for i in range(len(tuple_vector)):
             tuple_vector[i] = tuple_vector[i][0]
         return tuple_vector
+    
+    def convert_list_to_string(self, lists):
+        string = " ".join(lists)
+        return string
