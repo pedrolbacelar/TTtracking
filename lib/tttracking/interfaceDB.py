@@ -124,6 +124,18 @@ class interfaceDB():
                 id
                 )
             )
+    
+    def get_tasks_from_cluster(self,cluster_name):
+        with sqlite3.connect(self.namedb) as db:
+            tasks = db.execute(
+                """
+                SELECT task_id, name FROM task_table WHERE cluster = ? AND start_string IS NULL
+                """,(cluster_name, )
+            ).fetchall()
+
+            return tasks
+
+
     # ================================================
 
     # ============== CLUSTER - TAG MANAGEMENT ==============
@@ -159,3 +171,4 @@ class interfaceDB():
             ).fetchall()
 
             return clusters
+        

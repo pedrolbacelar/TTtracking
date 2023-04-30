@@ -11,6 +11,7 @@ class TTtracker():
         self.condition = True
         self.current_tasks = []
         self.working_task = None
+        self.cluster_adding = None
 
         # ----- Database Management -----
         self.task_interfaceDB = interfaceDB("task")
@@ -66,20 +67,33 @@ class TTtracker():
 
         secondary_command: list of string
         """
-        #--- Create a task object
-        name = " ".join(secondary_command)
+        # ----- Choosing Cluster -----
+        #--- Task with a cluster
+        if secondary_command[0] == 'in':
+            secondary_command.pop(0)
+            self.cluster_adding = secondary_command.pop(0)
 
-        #--- Get the next task id
-        id= self.task_interfaceDB.get_next_taks_id()
 
-        #--- Create Task
-        new_task = Task(name= name, id= id)
+        #--- check cluster existing ---
+        if self.check_clusters(self.cluster_adding):
 
-        #--- Insert it into the database
-        self.task_interfaceDB.insert_task(new_task)
+            #--- Create a task object
+            name = " ".join(secondary_command)
+            cluster_name = self.cluster_adding
 
-        #--- Add task the working tasks
-        self.current_tasks.append(new_task)
+            
+
+            #--- Get the next task id
+            id= self.task_interfaceDB.get_next_taks_id()
+
+            #--- Create Task
+            new_task = Task(name= name, id= id, cluster= cluster_name)
+
+            #--- Insert it into the database
+            self.task_interfaceDB.insert_task(new_task)
+
+            #--- Add task the working tasks
+            self.current_tasks.append(new_task)
 
 
     def command_show_task(self, secondary_command):
@@ -102,8 +116,8 @@ class TTtracker():
                 elif taks[0] > 10:
                     print(f"      {taks[0]}       |   {taks[1]}")
 
-        # --- 'show clusters' or 'show cluster'
-        elif secondary_command[0] == "clusters" or "cluster":
+        # --- Showing existing cluster
+        elif secondary_command[0] == "clusters" or secondary_command[0] == "cluster":
             #--- Get clusters IDs and Names from the database
             clusters = self.cluster_interfaceDB.get_clusters()
             
@@ -115,6 +129,42 @@ class TTtracker():
                     print(f"       {cluster[0]}       |   {cluster[1]}")
                 elif cluster[0] > 10:
                     print(f"      {cluster[0]}       |   {cluster[1]}")
+
+        # --- Showing tasking from a specific cluster
+        elif secondary_command[0] == "from":
+            #--- get cluster name
+            cluster_name = secondary_command[1]
+            
+            #--- Check to see the cluster exists
+            if self.check_clusters(cluster_name):
+
+                #--- Get tasks from specific cluster
+                open_tasks = self.task_interfaceDB.get_tasks_from_cluster(cluster_name)
+                
+                self.helper.printer(f"Showing all open tasks FROM {cluster_name}:")
+                print("   TASKS IDs   |   TASK NAME")
+                for taks in open_tasks:
+                    if taks[0] < 10:
+                        print(f"       {taks[0]}       |   {taks[1]}")
+                    elif taks[0] > 10:
+                        print(f"      {taks[0]}       |   {taks[1]}")
+
+        elif secondary_command[0] == "working":
+            if self.working_task != None:
+                if self.working_task.get_end_string() == None:
+                    self.helper.printer(f"You are working on this task at the moment: '{self.working_task.get_name()}' and Started at: {self.working_task.get_start_string()}", time= True)
+                else:
+                    self.helper.printer(f"You are not working in any task, the last one was: '{self.working_task.get_name()}' and Finished at {self.working_task.get_end_string()}")
+                    
+            else:
+                self.helper.printer("You didn't started any task within this scope")
+        #--- If it's nothing raise a message
+        else:
+            self.helper.printer(f"[ERROR] The sub-command '{secondary_command[0]}' is not valid.", 'red')
+            self.helper.printer(f"Available sub-command to mix with 'show':")
+            print("|--- 'show clusters': show all available clusters")
+            print("|--- 'show from cluster_X': Show open task from cluster_X")
+
 
 
     def command_start_task(self,secondary_command):
@@ -288,6 +338,12 @@ class TTtracker():
             print("|--- 'create tag my new tag': creates a new tag")
 
     def command_kill(self, secondary_command):
+
+        if self.working_task != None and self.working_task.get_end_string() == None:
+            #--- Forced finish the current task
+            self.working_task.finish()
+            self.helper.printer(f"[WARNING] Task '{self.working_task.get_name()}' finished by force!", time= True, color= 'red')
+
         self.helper.kill(self.name)
 
     # ===================== HELPING FUNCTIONS =====================
@@ -310,3 +366,25 @@ class TTtracker():
                 index= self.current_tasks.index(task)
                 self.current_tasks.pop(index)
                 self.current_tasks.append(task)
+
+    def check_clusters(self,cluster_name):
+        flag_cluster_exists = False
+
+        if cluster_name == None:
+            self.helper.printer(f"[ERROR] Not possible to create a tasks without a cluster", 'red')
+            self.helper.printer(f"Consider using 'add in <cluster_name> <task_name>' for the first add")
+            self.helper.printer(f"For more help use the command 'help'")
+
+        else:
+            clusters = self.cluster_interfaceDB.get_clusters()
+
+            for cluster in clusters:
+                if cluster[1] == cluster_name:
+                    flag_cluster_exists = True
+            
+            if flag_cluster_exists == False:
+                self.helper.printer(f"[ERROR] Cluster {cluster_name} not exists!", 'red')
+                self.commands_store['show'](['clusters'])
+                self.helper.printer(f"If the desired cluster is not within the existing ones, consider creating a new one: 'create cluster {cluster_name}'")
+        
+        return flag_cluster_exists
