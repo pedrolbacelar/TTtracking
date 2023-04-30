@@ -34,7 +34,8 @@ class interfaceDB():
                 tags TEXT,
                 cluster TEXT,
                 start_string TEXT,
-                end_string TEXT
+                end_string TEXT,
+                targeted_time INTEGER
                 )
                 """
             )
