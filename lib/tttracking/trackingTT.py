@@ -95,7 +95,6 @@ class TTtracker():
             #--- Add task the working tasks
             self.current_tasks.append(new_task)
 
-
     def command_show_task(self, secondary_command):
         """
         'show': Show all the tasks that don't have a start_time
@@ -164,8 +163,6 @@ class TTtracker():
             self.helper.printer(f"Available sub-command to mix with 'show':")
             print("|--- 'show clusters': show all available clusters")
             print("|--- 'show from cluster_X': Show open task from cluster_X")
-
-
 
     def command_start_task(self,secondary_command):
         """
@@ -336,6 +333,9 @@ class TTtracker():
             self.helper.printer(f"Available sub-command to mix with 'create':")
             print("|--- 'create cluster my new cluster': creates a new cluster")
             print("|--- 'create tag my new tag': creates a new tag")
+
+    # def command_myday(self, secondary_command):
+
 
     def command_kill(self, secondary_command):
 

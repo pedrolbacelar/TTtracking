@@ -20,6 +20,8 @@ class interfaceDB():
         if name == "cluster":
             self.create_cluster_table()
     
+        if name == "myday":
+            self.create_myday_table()
     # ============== TASK MANAGEMENT ==============
     # --- create a tasks table ---
     def create_task_table(self):
@@ -172,4 +174,33 @@ class interfaceDB():
             ).fetchall()
 
             return clusters
-        
+    
+    # ============== MYDAY MANAGEMENT ==============
+    def create_myday_table(self):
+        with sqlite3.connect(self.namedb) as db:
+            db.execute(
+                """
+                CREATE TABLE IF NOT EXISTS myday_table (
+                myday_id INTEGER PRIMARY KEY,
+                task_id INTEGER,
+                task_name TEXT,
+                cluster_name TEXT
+                )
+                """
+            )
+    
+    def insert_myday(self, task):
+        with sqlite3.connect(self.namedb) as db:
+            task_id = task.get_id()
+            task_name = task.get_name()
+            cluster_name = task.get_cluster()
+
+            db.execute(
+                """
+                INSERT INTO myday_table (task_id, task_name, cluster_name)
+                VALUES (?, ?, ?)
+                """, (task_id, task_name, cluster_name)
+            )
+            
+
+
