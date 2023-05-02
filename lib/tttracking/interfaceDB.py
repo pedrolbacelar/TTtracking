@@ -189,11 +189,11 @@ class interfaceDB():
                 """
             )
     
-    def insert_myday(self, task):
+    def insert_myday(self, task_id, task_name, cluster_name):
         with sqlite3.connect(self.namedb) as db:
-            task_id = task.get_id()
-            task_name = task.get_name()
-            cluster_name = task.get_cluster()
+            # task_id = task.get_id()
+            # task_name = task.get_name()
+            # cluster_name = task.get_cluster()
 
             db.execute(
                 """
@@ -201,6 +201,14 @@ class interfaceDB():
                 VALUES (?, ?, ?)
                 """, (task_id, task_name, cluster_name)
             )
-            
+    def get_open_myday(self):
+        with sqlite3.connect(self.namedb) as db:
+            tasks = db.execute(
+                """
+                SELECT task_id, task_name, cluster_name FROM myday_table
+                """
+            ).fetchall()
+
+            return tasks
 
 

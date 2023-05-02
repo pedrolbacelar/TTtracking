@@ -8,7 +8,8 @@ class TTtracker():
     def __init__(self,name):
         self.helper = Helper()
         self.name = name
-        self.condition = True
+        self.alive = True
+        self.next_tracking = "task"
         self.current_tasks = []
         self.working_task = None
         self.cluster_adding = None
@@ -16,6 +17,7 @@ class TTtracker():
         # ----- Database Management -----
         self.task_interfaceDB = interfaceDB("task")
         self.cluster_interfaceDB = interfaceDB("cluster")
+        self.myday_interfaceDB = interfaceDB("myday")
 
 
         # ----- COMMANDS DICTIONARY -----
@@ -27,6 +29,8 @@ class TTtracker():
             "restart": self.command_restart_task,
             "finish": self.command_finish_task,
             "create": self.command_create,
+            "myday": self.command_myday,
+            "switch": self.command_switch,
             "help": self.command_help,
             "kill": self.command_kill
         }
@@ -34,7 +38,7 @@ class TTtracker():
 
     def run(self):
         # ------ Infinity Loop ------
-        while self.condition:
+        while self.alive:
             #--- Receives the Input 
             command = input(f"{self.name}>> ")
 
@@ -48,7 +52,9 @@ class TTtracker():
                 self.helper.printer(f"------ [ERROR] '{main_command}' is not an available command! ------", 'red')
                 self.commands_store["help"](secondary_command)
 
-
+        #--- Just to confirm
+        if self.alive == False:
+            return self.next_tracking
     # ===================== COMMANDS FUNCTIONS =====================
 
     def command_help(self, secondary_command):
@@ -157,6 +163,19 @@ class TTtracker():
                     
             else:
                 self.helper.printer("You didn't started any task within this scope")
+        
+        elif secondary_command[0] == "myday":
+            #--- Get open tasks
+            open_tasks = self.myday_interfaceDB.get_open_myday()
+            
+            self.helper.printer("Showing all open day tasks:")
+            print("   TASKS IDs   |   TASK NAME")
+            for taks in open_tasks:
+                if taks[0] < 10:
+                    print(f"       {taks[0]}       |   {taks[1]}")
+                elif taks[0] > 10:
+                    print(f"      {taks[0]}       |   {taks[1]}")
+
         #--- If it's nothing raise a message
         else:
             self.helper.printer(f"[ERROR] The sub-command '{secondary_command[0]}' is not valid.", 'red')
@@ -334,8 +353,45 @@ class TTtracker():
             print("|--- 'create cluster my new cluster': creates a new cluster")
             print("|--- 'create tag my new tag': creates a new tag")
 
-    # def command_myday(self, secondary_command):
+    def command_myday(self, secondary_command):
+        """
+        'myday 9 81 38 29 17'
+        secondary_command= ['9', '81', '38', '29', '17']
+        """
+        #--- Get tasks ID and convert into int
+        tasks_ids = []
+        for element in secondary_command:
+            task_id = int(element)
+            tasks_ids.append(task_id)
 
+            #--- Get property for that task id
+            properties = self.task_interfaceDB.get_property(task_id)
+            task_name = properties[1]
+            cluster_name = properties[5]
+
+            #--- Inser that tasks info into myday table
+            self.myday_interfaceDB.insert_myday(task_id, task_name, cluster_name)
+
+    def command_switch(self, secondary_command):
+        """
+        switch task
+        switch finance
+        switch daily
+        """
+        
+        #--- Take the name of swicthing tracking
+        self.next_tracking = secondary_command[0]
+        
+        #--- Kill the condition of the main loop
+        self.alive = False
+
+        self.helper.printer(f" --- Swtiching to Tracking '{self.next_tracking}' ---", 'brown')
+
+
+                
+
+
+        
 
     def command_kill(self, secondary_command):
 
