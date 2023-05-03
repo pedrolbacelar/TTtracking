@@ -124,3 +124,10 @@ class Helper():
     def convert_list_to_string(self, lists):
         string = " ".join(lists)
         return string
+    
+    def sec2min(self, sec):
+        return round(sec/60)
+    def mind2sec(self, min):
+        return min*60
+    def sec2hour(self,sec):
+        return round(sec/3600)

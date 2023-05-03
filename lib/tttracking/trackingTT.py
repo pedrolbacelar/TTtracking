@@ -118,8 +118,10 @@ class TTtracker():
             for taks in open_tasks:
                 if taks[0] < 10:
                     print(f"       {taks[0]}       |   {taks[1]}")
-                elif taks[0] > 10:
+                elif taks[0] > 9 and taks[0] < 100:
                     print(f"      {taks[0]}       |   {taks[1]}")
+                elif taks[0] > 99:
+                        print(f"     {taks[0]}       |   {taks[1]}")
 
         # --- Showing existing cluster
         elif secondary_command[0] == "clusters" or secondary_command[0] == "cluster":
@@ -151,8 +153,10 @@ class TTtracker():
                 for taks in open_tasks:
                     if taks[0] < 10:
                         print(f"       {taks[0]}       |   {taks[1]}")
-                    elif taks[0] > 10:
+                    elif taks[0] > 9 and taks[0] < 100:
                         print(f"      {taks[0]}       |   {taks[1]}")
+                    elif taks[0] > 99:
+                        print(f"     {taks[0]}       |   {taks[1]}")
 
         elif secondary_command[0] == "working":
             if self.working_task != None:
@@ -173,9 +177,10 @@ class TTtracker():
             for taks in open_tasks:
                 if taks[0] < 10:
                     print(f"       {taks[0]}       |   {taks[1]}")
-                elif taks[0] > 10:
+                elif taks[0] > 9 and taks[0] < 100:
                     print(f"      {taks[0]}       |   {taks[1]}")
-
+                elif taks[0] > 99:
+                    print(f"     {taks[0]}       |   {taks[1]}")
         #--- If it's nothing raise a message
         else:
             self.helper.printer(f"[ERROR] The sub-command '{secondary_command[0]}' is not valid.", 'red')
@@ -312,6 +317,8 @@ class TTtracker():
             #--- Update database
             self.task_interfaceDB.update_task(self.working_task)
 
+            task_id = self.working_task.get_id()
+
         else:
             task_id = int(secondary_command[0])
 
@@ -324,6 +331,14 @@ class TTtracker():
 
             #--- Update position in current task
             self.update_positioning(current_task.get_id())
+
+        #--- Drop the Taks from Myday
+        #--- Get open tasks
+        open_tasks = self.myday_interfaceDB.get_open_myday()
+        for task in open_tasks:
+            if task[0] == task_id:
+                #--- Task finished is on myday, so we deleted
+                self.myday_interfaceDB.delete_myday_task(task_id)
 
     def command_create(self,secondary_command):
         """
@@ -398,6 +413,15 @@ class TTtracker():
         if self.working_task != None and self.working_task.get_end_string() == None:
             #--- Forced finish the current task
             self.working_task.finish()
+            task_id = self.working_task.get_id()
+            #--- Drop the Taks from Myday
+            #--- Get open tasks
+            open_tasks = self.myday_interfaceDB.get_open_myday()
+            for task in open_tasks:
+                if task[0] == task_id:
+                    #--- Task finished is on myday, so we deleted
+                    self.myday_interfaceDB.delete_myday_task(task_id)
+                    
             self.helper.printer(f"[WARNING] Task '{self.working_task.get_name()}' finished by force!", time= True, color= 'red')
 
         self.helper.kill(self.name)

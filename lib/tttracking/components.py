@@ -5,6 +5,7 @@ helper = Helper()
 class Task():
     def __init__(self, name, id, tags= None, autostart= None, cluster= None):
         #--- Initialization
+        self.helper = Helper()
         self.name = name
         self.id = id
         self.tags = tags
@@ -103,7 +104,7 @@ class Task():
 
         ####################################################
         helper.printer(f"Task '{self.name}' done!", color='green', time= True)
-        helper.printer(f"Raw Time: {self.worked_time_raw}, Clean Time: {self.worked_time_clean}, Stopped Time: {self.total_stopped}")
+        helper.printer(f"Raw Time: {self.helper.sec2min(self.worked_time_raw)} min, Clean Time: {self.helper.sec2min(self.worked_time_clean)} min, Stopped Time: {self.helper.sec2min(self.total_stopped)} min")
         ####################################################
 
     # --------------------- Get Methods ---------------------

@@ -212,3 +212,12 @@ class interfaceDB():
             return tasks
 
 
+    def delete_myday_task(self, task_id):
+        # Open a connection to the database
+        with sqlite3.connect(self.namedb) as db:
+            cursor = db.cursor()
+            query = "DELETE FROM myday_table WHERE task_id = ?"
+            cursor.execute(query, (task_id,))
+            db.commit()
+            print(f"Deleted row with task id {task_id} from myday_table.")
+
