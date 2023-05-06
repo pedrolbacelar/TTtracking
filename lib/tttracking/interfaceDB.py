@@ -9,10 +9,13 @@ class interfaceDB():
         self.name = name
 
         #--- Database Path Assigned
-        self.namedb = f"databases/TTtracking.db"
+        if name == "task" or name == "cluster" or name == "myday":
+            self.namedb = f"databases/TTtracking.db"
+        elif name == "fin":
+            self.namedb = f"databases/FinTracking.db"
+        
         self.helper.create_file("databases")
         
-
         #--- Table creation
         if name == "task":
             self.create_task_table()
@@ -22,6 +25,13 @@ class interfaceDB():
     
         if name == "myday":
             self.create_myday_table()
+    
+        if name == "fin":
+            self.create_finance_table()
+            self.create_category_table()
+    
+    
+    
     # ============== TASK MANAGEMENT ==============
     # --- create a tasks table ---
     def create_task_table(self):
@@ -240,4 +250,66 @@ class interfaceDB():
             task = cursor.execute(query2, (task_id,)).fetchall()
             if len(task) > 0:
                 print(f"Deleted row with task id {task_id} from myday_table.")
+
+    # ============== FINANCE MANAGEMENT ==============
+    def create_finance_table(self):
+        with sqlite3.connect(self.namedb) as db:
+            db.execute(
+                """
+                CREATE TABLE IF NOT EXISTS finance_table (
+                finance_id INTEGER PRIMARY KEY,
+                name TEXT,
+                category TEXT,
+                type TEXT,
+                value REAL,
+                date TEXT,
+                )
+                """
+            )
+
+    def create_category_table(self):
+        with sqlite3.connect(self.namedb) as db:
+            db.execute(
+                """
+                CREATE TABLE IF NOT EXISTS category_table (
+                category_id INTEGER PRIMARY KEY,
+                name TEXT,
+                type TEXT
+                )
+                """
+            )
+    
+    def insert_finance(self, finevent):
+        with sqlite3.connect(self.namedb) as db:
+            name = finevent.get_name()
+            category = finevent.get_category()
+            type = finevent.get_type()
+            value = finevent.get_value()
+            date = finevent.get_date()
+            
+            db.execute(
+                """
+                INSERT INTO finance_table (name, category, type, value, date)
+                VALUES (?, ?, ?, ?, ?)
+                """, (name, category, type, value, date)
+            )
+
+    def insert_category(self, name):
+        with sqlite3.connect(self.namedb) as db:
+            db.execute(
+                """
+                INSERT INTO category_table (name)
+                VALUES (?)
+                """, (name,)
+            )
+
+    def get_category(self, name):
+        with sqlite3.connect(self.namedb) as db:
+            category = db.execute(
+                """
+                SELECT * FROM category_table WHERE name = ?
+                """, (name,)
+            ).fetchone()
+
+            return category
 

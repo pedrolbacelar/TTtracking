@@ -93,6 +93,11 @@ class Helper():
 
         return (current_time_str, current_timestamp)
     
+    def get_day_now(self):
+        current_time = datetime.datetime.now()
+        current_time_str = current_time.strftime("%d")
+        return current_time_str
+    
     #--- Copy one file into a new path
     def duplicate_file(self, reference_file, copied_file):
         shutil.copy2(reference_file, copied_file)

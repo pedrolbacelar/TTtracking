@@ -1,7 +1,5 @@
 from .interfaceDB import interfaceDB
 from .components import Task
-from .components import Tag
-from .components import Cluster
 from .helper import Helper
 
 class TTtracker():
