@@ -71,12 +71,28 @@ class interfaceDB():
         with sqlite3.connect(self.namedb) as db:
             tasks= db.execute(
                 f"""
-                SELECT task_id, name FROM task_table WHERE start_string IS NULL
+                SELECT task_id, name, cluster FROM task_table WHERE start_string IS NULL
                 """
             ).fetchall()
             #tasks = self.helper.convert_tuple_vector_to_list(tasks)
             return tasks
     
+    # ------ Show idle tasks (started but not finish) ------
+    def get_idle_tasks(self):
+        """
+        Search for tasks with a started different than None but with a finish equal to None
+        """
+    
+        with sqlite3.connect(self.namedb) as db:
+            tasks = db.execute(
+                """
+                SELECT task_id, name, cluster FROM task_table WHERE start_string IS NOT NULL AND end_string IS NULL
+                """
+            ).fetchall()
+
+            return tasks
+
+
     # ------ Get task property ------
     def get_property(self, id):
         with sqlite3.connect(self.namedb) as db:
@@ -201,6 +217,7 @@ class interfaceDB():
                 VALUES (?, ?, ?)
                 """, (task_id, task_name, cluster_name)
             )
+    
     def get_open_myday(self):
         with sqlite3.connect(self.namedb) as db:
             tasks = db.execute(
@@ -211,7 +228,6 @@ class interfaceDB():
 
             return tasks
 
-
     def delete_myday_task(self, task_id):
         # Open a connection to the database
         with sqlite3.connect(self.namedb) as db:
@@ -219,5 +235,9 @@ class interfaceDB():
             query = "DELETE FROM myday_table WHERE task_id = ?"
             cursor.execute(query, (task_id,))
             db.commit()
-            print(f"Deleted row with task id {task_id} from myday_table.")
+
+            query2 = "SELECT * FROM myday_table WHERE task_id = ?"
+            task = cursor.execute(query2, (task_id,)).fetchall()
+            if len(task) > 0:
+                print(f"Deleted row with task id {task_id} from myday_table.")
 

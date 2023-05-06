@@ -131,12 +131,14 @@ class Task():
     def get_stopped_time(self):
         return self.total_stopped
 
-class Cluster():
-    def __init__(self, name):
-        self.name = name
 
-class Tag():
-    def __init__(self, name):
-        self.name = name
-    
+    # ------------------------ SET METHODS ------------------------
+    def set_worked_clean(self, clean_tme):
+        self.worked_time_clean = clean_tme
+    def set_manual_edited(self):
+        (tsrt, t) = self.helper.get_time_now()
+        self.start_string = f"edited - {tsrt}"
+        self.end_string = f"edited - {tsrt}"
+
+
     

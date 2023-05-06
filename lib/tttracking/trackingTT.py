@@ -19,7 +19,6 @@ class TTtracker():
         self.cluster_interfaceDB = interfaceDB("cluster")
         self.myday_interfaceDB = interfaceDB("myday")
 
-
         # ----- COMMANDS DICTIONARY -----
         self.commands_store = {
             "add":  self.commmand_create_task,
@@ -31,6 +30,7 @@ class TTtracker():
             "create": self.command_create,
             "myday": self.command_myday,
             "switch": self.command_switch,
+            "set": self.command_set,
             "help": self.command_help,
             "kill": self.command_kill
         }
@@ -117,11 +117,11 @@ class TTtracker():
             print("   TASKS IDs   |   TASK NAME")
             for taks in open_tasks:
                 if taks[0] < 10:
-                    print(f"       {taks[0]}       |   {taks[1]}")
+                    print(f"       {taks[0]}       |   \033[35m{taks[2]}\033[0m - {taks[1]}")
                 elif taks[0] > 9 and taks[0] < 100:
-                    print(f"      {taks[0]}       |   {taks[1]}")
+                    print(f"      {taks[0]}       |   \033[35m{taks[2]}\033[0m - {taks[1]}")
                 elif taks[0] > 99:
-                        print(f"     {taks[0]}       |   {taks[1]}")
+                        print(f"     {taks[0]}       |   \033[35m{taks[2]}\033[0m - {taks[1]}")
 
         # --- Showing existing cluster
         elif secondary_command[0] == "clusters" or secondary_command[0] == "cluster":
@@ -176,11 +176,34 @@ class TTtracker():
             print("   TASKS IDs   |   TASK NAME")
             for taks in open_tasks:
                 if taks[0] < 10:
-                    print(f"       {taks[0]}       |   {taks[1]}")
+                    print(f"       {taks[0]}       |   \033[35m{taks[2]}\033[0m - {taks[1]}")
                 elif taks[0] > 9 and taks[0] < 100:
-                    print(f"      {taks[0]}       |   {taks[1]}")
+                    print(f"      {taks[0]}       |   \033[35m{taks[2]}\033[0m - {taks[1]}")
                 elif taks[0] > 99:
-                    print(f"     {taks[0]}       |   {taks[1]}")
+                    print(f"     {taks[0]}       |   \033[35m{taks[2]}\033[0m - {taks[1]}")
+        
+        elif secondary_command[0] == "idle":
+            """
+            show idle: shows the tasks started but not finished
+            for helping setting it correctly when the user
+            forget to finished it
+            """
+
+            idle_tasks = self.task_interfaceDB.get_idle_tasks()
+            if len(idle_tasks) > 0:
+                self.helper.printer("Showing all idle tasks:")
+                print("   TASKS IDs   |   TASK NAME")
+                for taks in idle_tasks:
+                    if taks[0] < 10:
+                        print(f"       {taks[0]}       |   \033[35m{taks[2]}\033[0m - {taks[1]}")
+                    elif taks[0] > 9 and taks[0] < 100:
+                        print(f"      {taks[0]}       |   \033[35m{taks[2]}\033[0m - {taks[1]}")
+                    elif taks[0] > 99:
+                            print(f"     {taks[0]}       |   \033[35m{taks[2]}\033[0m - {taks[1]}")
+
+            else:
+                self.helper.printer(f"[WARNING] No idle tasks found, i.e., no tasks with started and without an end time", 'brown')
+
         #--- If it's nothing raise a message
         else:
             self.helper.printer(f"[ERROR] The sub-command '{secondary_command[0]}' is not valid.", 'red')
@@ -373,19 +396,33 @@ class TTtracker():
         'myday 9 81 38 29 17'
         secondary_command= ['9', '81', '38', '29', '17']
         """
-        #--- Get tasks ID and convert into int
-        tasks_ids = []
-        for element in secondary_command:
-            task_id = int(element)
-            tasks_ids.append(task_id)
+        # ----- Adding tasks to myday -----
+        if secondary_command[0] == "drop":
+            #-- Exclude the sub command
+            secondary_command.pop(0)
 
-            #--- Get property for that task id
-            properties = self.task_interfaceDB.get_property(task_id)
-            task_name = properties[1]
-            cluster_name = properties[5]
+            #-- Exclude each task ID in the secondary command
+            for element in secondary_command:
+                #-- Get the ID
+                task_id = int(element)
 
-            #--- Inser that tasks info into myday table
-            self.myday_interfaceDB.insert_myday(task_id, task_name, cluster_name)
+                #-- Delete task id
+                self.myday_interfaceDB.delete_myday_task(task_id)
+        
+        else:
+            #--- Get tasks ID and convert into int
+            tasks_ids = []
+            for element in secondary_command:
+                task_id = int(element)
+                tasks_ids.append(task_id)
+
+                #--- Get property for that task id
+                properties = self.task_interfaceDB.get_property(task_id)
+                task_name = properties[1]
+                cluster_name = properties[5]
+
+                #--- Inser that tasks info into myday table
+                self.myday_interfaceDB.insert_myday(task_id, task_name, cluster_name)
 
     def command_switch(self, secondary_command):
         """
@@ -402,9 +439,47 @@ class TTtracker():
 
         self.helper.printer(f" --- Swtiching to Tracking '{self.next_tracking}' ---", 'brown')
 
+    def command_set(self, secondary_command):
+        """
+        1. Start task without a finish 
+        2. Didn't start the task but it was already done
+        
+        > set task_id <clean_time>
 
+        """
+        try:
+            #--- Extract infos from the secondary command
+            id = secondary_command[0]
+            clean_time = int(secondary_command[1]) #minutes
+
+            #--- Convert the clean time in seconds
+            clean_time = clean_time * 60
+
+            #--- Get properties of the taks
+            task_property = self.task_interfaceDB.get_property(id)
+
+            #--- Create task object
+            task = Task(
+                name= task_property[1],
+                id= id,
+                tags= task_property[4],
+                cluster= task_property[5]
+            )
+
+            #--- Set the clean time worked
+            task.set_worked_clean(clean_time)
+
+            #--- Reset the start and finish time
+            task.set_manual_edited()
+
+            #--- Update the task in the database
+            self.task_interfaceDB.update_task(task)
+
+            #--- Also remove it from myday if it was there
+            self.myday_interfaceDB.delete_myday_task(task.get_id())
                 
-
+        except:
+            self.helper.printer(f"[ERROR] Something went wrong while setting the task with ID: {secondary_command[0]} to clean time: {secondary_command[1]}", 'red')
 
         
 
@@ -422,7 +497,7 @@ class TTtracker():
                     #--- Task finished is on myday, so we deleted
                     self.myday_interfaceDB.delete_myday_task(task_id)
                     
-            self.helper.printer(f"[WARNING] Task '{self.working_task.get_name()}' finished by force!", time= True, color= 'red')
+            self.helper.printer(f"[WARNING] Task '{self.working_task.get_name()}' finished by force!", time= True, color= 'brown')
 
         self.helper.kill(self.name)
 
