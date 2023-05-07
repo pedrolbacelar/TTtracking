@@ -38,7 +38,7 @@ class TTtracker():
         # ------ Infinity Loop ------
         while self.alive:
             #--- Receives the Input 
-            command = input(f"{self.name}>> ")
+            command = input(f"{self.name}>>> ")
 
             #--- Extracts the words
             (main_command, secondary_command) = self.extractor(command)
@@ -435,7 +435,7 @@ class TTtracker():
         #--- Kill the condition of the main loop
         self.alive = False
 
-        self.helper.printer(f" --- Swtiching to Tracking '{self.next_tracking}' ---", 'brown')
+        self.helper.printer(f"---- Swtiching to Tracking '{self.next_tracking}' ----", 'brown')
 
     def command_set(self, secondary_command):
         """

@@ -11,9 +11,9 @@ class Tracker():
         while True:
             #--- Create the tracking
             if self.next_tracking == "task":
-                tracking = TTtracker(self.name)
+                tracking = TTtracker(f"Task {self.name}")
             elif self.next_tracking == "fin":
-                tracking = FinTracker(self.name)
+                tracking = FinTracker(f"Finan {self.name}")
 
             #--- Run the tracking
             self.next_tracking = tracking.run()

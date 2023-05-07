@@ -1,6 +1,6 @@
 import sqlite3
 from .helper import Helper
-
+from .components import Task, FinEvent, FinCategory
 
 class interfaceDB():
     def __init__(self, name):
@@ -262,7 +262,7 @@ class interfaceDB():
                 category TEXT,
                 type TEXT,
                 value REAL,
-                date TEXT,
+                date TEXT
                 )
                 """
             )
@@ -274,7 +274,8 @@ class interfaceDB():
                 CREATE TABLE IF NOT EXISTS category_table (
                 category_id INTEGER PRIMARY KEY,
                 name TEXT,
-                type TEXT
+                type TEXT,
+                budget INTEGER
                 )
                 """
             )
@@ -294,13 +295,13 @@ class interfaceDB():
                 """, (name, category, type, value, date)
             )
 
-    def insert_category(self, name):
+    def insert_category(self, name, type, budget):
         with sqlite3.connect(self.namedb) as db:
             db.execute(
                 """
-                INSERT INTO category_table (name)
-                VALUES (?)
-                """, (name,)
+                INSERT INTO category_table (name, type, budget)
+                VALUES (?, ?, ?)
+                """, (name,type,budget)
             )
 
     def get_category(self, name):
@@ -310,6 +311,54 @@ class interfaceDB():
                 SELECT * FROM category_table WHERE name = ?
                 """, (name,)
             ).fetchone()
-
+        
+        if category is None:
+            return None
+        else:
+            category = FinCategory(name=category[1], type=category[2], budget=category[3], id=category[0])
+            
             return category
 
+    def get_categories(self):
+        with sqlite3.connect(self.namedb) as db:
+            categories = db.execute(
+                """
+                SELECT * FROM category_table
+                """
+            ).fetchall()
+
+        fincategories = []
+        for category in categories:
+            fincategories.append(FinCategory(name=category[1], type=category[2], budget=category[3], id=category[0]))
+
+        return fincategories
+
+    def update_category(self, name, budget):
+        with sqlite3.connect(self.namedb) as db:
+            db.execute(
+                """
+                UPDATE category_table SET budget = ? WHERE name = ?
+                """, (budget, name)
+            )
+
+    def get_week_expenses(self):
+        (first_week_day, last_week_day) = self.helper.get_week()
+
+        with sqlite3.connect(self.namedb) as db:
+            expenses = db.execute(
+                f"""
+                SELECT * FROM finance_table WHERE type = 'exp' AND
+                date BETWEEN '{first_week_day}' AND '{last_week_day}'
+                """
+            ).fetchall()
+
+        if expenses is None:
+            return None
+        else:
+            #--- Creat FinEvents
+            finevents = []
+            for expense in expenses:
+                expense = FinEvent(name= expense[1], category= expense[2], type= expense[3], value= expense[4], date= expense[5], id= expense[0])
+                finevents.append(expense)        
+            
+            return finevents

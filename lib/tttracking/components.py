@@ -141,12 +141,13 @@ class Task():
         self.end_string = f"edited - {tsrt}"
 
 class FinEvent():
-    def __init__(self, name, category, type, value, date):
+    def __init__(self, name, category, type, value, date, id= None):
         self.name = name
         self.category = category
         self.value = value
         self.date = date
         self.type = type
+        self.id = id
 
     
     # --------------------- Get Methods ---------------------
@@ -158,5 +159,27 @@ class FinEvent():
         return self.value
     def get_date(self):
         return self.date
+    def get_type(self):
+        return self.type
+    def get_id(self):
+        return self.id
+
+class FinCategory():
+    def __init__(self, name, type, budget, id= None):
+        self.name = name
+        self.type = type
+        self.budget = budget
+        self.id = id
+    
+    # --------------------- Get Methods ---------------------
+    def get_name(self):
+        return self.name
+    def get_type(self):
+        return self.type
+    def get_budget(self):
+        return int(self.budget)
+    def get_id(self):
+        return self.id
+    
     
     

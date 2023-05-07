@@ -4,6 +4,9 @@ import os
 
 #--- Common Libraries
 import datetime
+from datetime import datetime as dtime
+
+import calendar
 from time import sleep
 import shutil
 import os
@@ -85,7 +88,7 @@ class Helper():
         current_timestamp = datetime.datetime.now().timestamp()
         current_timestamp = round(current_timestamp)
         current_time = datetime.datetime.now()
-        current_time_str = current_time.strftime("%d %B %H:%M:%S")
+        current_time_str = current_time.strftime("%d %B %Y %H:%M:%S")
 
         if verbose == True:
             print(f"Current Time: {current_time_str}")
@@ -95,9 +98,75 @@ class Helper():
     
     def get_day_now(self):
         current_time = datetime.datetime.now()
-        current_time_str = current_time.strftime("%d")
+        current_time_str = current_time.strftime("%d %B %Y")
         return current_time_str
     
+    def get_day_timestamp(self, date_str):
+        date = datetime.datetime.strptime(date_str, "%d %B %Y")
+        return int(date.timestamp())
+    def get_timestamp(self, time):
+        date = datetime.datetime.strptime(time, "%Y-%B-%d %H:%M:%S")
+        return int(date.timestamp())
+    
+    def get_current_day(self):
+        """
+        Returns the current day in the format "%d %B %Y".
+
+        Returns:
+            str: The current day in the format "%d %B %Y".
+        """
+        current_date = dtime.now().strftime("%d %B %Y")
+        return current_date 
+    
+    def convert_date_string(self, date_str):
+        """
+        Converts a date string in the format of "%Y-%B-%d %H:%M:%S" to "%d %B %Y".
+
+        Args:
+            date_str (str): The date string in the format of "%Y-%B-%d %H:%M:%S".
+
+        Returns:
+            str: The date string in the format of "%d %B %Y".
+        """
+        date_obj = dtime.strptime(date_str, "%Y-%B-%d %H:%M:%S")
+        return date_obj.strftime("%d %B %Y")
+
+    # --- create a function that takes the current day and give
+    # back the first day and last day of the week, considering that
+    # the week starts on Monday and finishes on Sunday
+    def get_week(self, date_str = None):
+        "2023-05-08 00:00:00 2023-05-14 00:00:00"
+        if date_str == None:
+            date_str = self.get_current_day()
+        date = datetime.datetime.strptime(date_str, "%d %B %Y")
+        day = date.weekday()
+        if day == 0:
+            first_day = date
+        else:
+            first_day = date - datetime.timedelta(days=day)
+        last_day = first_day + datetime.timedelta(days=6)
+
+        #--- Convert to default day string format
+        first_day = self.convert_date_string(first_day.strftime("%Y-%B-%d %H:%M:%S"))
+        last_day = self.convert_date_string(last_day.strftime("%Y-%B-%d %H:%M:%S"))
+
+        return (first_day, last_day)
+    
+    def get_month(self, date_str= None):
+        "2023-04-01 00:00:00 2023-04-30 00:00:00"
+        if date_str == None:
+            date_str = self.get_current_day()
+        date = datetime.datetime.strptime(date_str, "%d %B %Y")
+        first_day = date.replace(day=1)
+        last_day = date.replace(day=calendar.monthrange(date.year, date.month)[1])
+        
+        #--- Convert to default day string format
+        first_day = self.convert_date_string(first_day)
+        last_day = self.convert_date_string(last_day)
+        
+        return (first_day, last_day)
+
+
     #--- Copy one file into a new path
     def duplicate_file(self, reference_file, copied_file):
         shutil.copy2(reference_file, copied_file)
