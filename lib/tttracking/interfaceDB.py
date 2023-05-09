@@ -1,6 +1,6 @@
 import sqlite3
 from .helper import Helper
-from .components import Task, FinEvent, FinCategory
+from .components import Task, FinEvent, FinCategory, Card
 
 class interfaceDB():
     def __init__(self, name):
@@ -14,6 +14,9 @@ class interfaceDB():
         elif name == "fin":
             self.namedb = f"databases/FinTracking.db"
         
+        elif name == "learn":
+            self.namedb = f"databases/LearnTracking.db"
+
         self.helper.create_file("databases")
         
         #--- Table creation
@@ -30,7 +33,8 @@ class interfaceDB():
             self.create_finance_table()
             self.create_category_table()
     
-    
+        if name == "learn":
+            self.create_cards_table()
     
     # ============== TASK MANAGEMENT ==============
     # --- create a tasks table ---
@@ -362,3 +366,162 @@ class interfaceDB():
                 finevents.append(expense)        
             
             return finevents
+
+    # ============== CARD MANAGEMENT ==============
+    # DATABASE STRUCTURE:
+    # - cards_table: [card_id, front, back, type, last_review, next_review, interval, nreviews, nfailed]
+    # Database Functions:
+    # - create_cards_table()
+    # - insert_card(front, back, type, last_review, next_review, interval, nreviews, nfailed)
+    # - get_cards(card_id) : get a specific card
+    # - get_cards_opens() : get all cards that the next review is today or before
+    # - get_cards_open_learning(): get all cards that the next review is today or before and type is learning
+    # - get_cards_open_new(): get all cards that the next review is today or before and type is new
+    # - get_cards_open_failed(): get all cards that the next review is today or before and type is failed
+
+    def create_cards_table(self):
+        with sqlite3.connect(self.namedb) as db:
+            db.execute(
+                """
+                CREATE TABLE IF NOT EXISTS cards_table (
+                card_id INTEGER PRIMARY KEY,
+                front TEXT,
+                back TEXT,
+                last_review TEXT,
+                next_review TEXT,
+                type TEXT,
+                interval INTEGER,
+                nreviews INTEGER,
+                nfailed INTEGER
+                )
+                """
+            )
+    def insert_card(self, card):
+        with sqlite3.connect(self.namedb) as db:
+            front = card.get_front()
+            back = card.get_back()
+            type = card.get_type()
+            last_review = card.get_last_review()
+            next_review = card.get_next_review()
+            interval = card.get_interval()
+            nreviews = card.get_nreviews()
+            nfailed = card.get_nfailed()
+
+            db.execute(
+                """
+                INSERT INTO cards_table (front, back, last_review, next_review, type, interval, nreviews, nfailed)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (front, back, last_review, next_review, type, interval, nreviews, nfailed)
+            )
+    
+    def get_card(self, card_id):
+        with sqlite3.connect(self.namedb) as db:
+            card = db.execute(
+                """
+                SELECT * FROM cards_table WHERE card_id = ?
+                """, (card_id,)
+            ).fetchone()
+        
+        if card is None:
+            return None
+        else:
+            card = Card(front=card[1], back=card[2], type=card[3], last_review=card[4], next_review=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
+            # front, back, last_review= None, next_review= None, type= "new", interval= 1, nreviews= 0, nfailed= 0, card_id= None
+            # front, back, last_review, next_review, type, interval, nreviews, nfailed
+            return card
+    
+    def get_card_open_random(self):
+        with sqlite3.connect(self.namedb) as db:
+            card = db.execute(
+                """
+                SELECT * FROM cards_table WHERE next_review <= '{self.helper.get_day_now()}' ORDER BY RANDOM() LIMIT 1
+                """
+            ).fetchone()
+        
+        if card is None:
+            return None
+        else:
+            card = Card(front=card[1], back=card[2], type=card[3], last_review=card[4], next_review=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
+            # front, back, last_review= None, next_review= None, type= "new", interval= 1, nreviews= 0, nfailed= 0, card_id= None
+            # front, back, last_review, next_review, type, interval, nreviews, nfailed
+            return card
+        
+    # - get_cards_opens() : get all cards that the next review is today or before
+    def get_cards_opens(self):
+        with sqlite3.connect(self.namedb) as db:
+            cards = db.execute(
+                f"""
+                SELECT * FROM cards_table WHERE next_review <= '{self.helper.get_day_now()}'
+                """
+            ).fetchall()
+        
+        if cards is None:
+            return None
+        else:
+            #--- Creat Cards
+            cards_list = []
+            for card in cards:
+                card = Card(front=card[1], back=card[2], type=card[3], last_review=card[4], next_review=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
+                cards_list.append(card)
+            
+            return cards_list
+
+    # - get_cards_open_learning(): get all cards that the next review is today or before and type is learning
+    def get_cards_open_learning(self):
+        with sqlite3.connect(self.namedb) as db:
+            cards = db.execute(
+                f"""
+                SELECT * FROM cards_table WHERE next_review <= '{self.helper.get_day_now()}' AND type = 'learning'
+                """
+            ).fetchall()
+        
+        if cards is None:
+            return None
+        else:
+            #--- Creat Cards
+            cards_list = []
+            for card in cards:
+                card = Card(front=card[1], back=card[2], type=card[3], last_review=card[4], next_review=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
+                cards_list.append(card)
+            
+            return cards_list
+        
+    # - get_cards_open_new(): get all cards that the next review is today or before and type is new
+    def get_cards_open_new(self):
+        with sqlite3.connect(self.namedb) as db:
+            cards = db.execute(
+                f"""
+                SELECT * FROM cards_table WHERE next_review <= '{self.helper.get_day_now()}' AND type = 'new'
+                """
+            ).fetchall()
+        
+        if cards is None:
+            return None
+        else:
+            #--- Creat Cards
+            cards_list = []
+            for card in cards:
+                card = Card(front=card[1], back=card[2], type=card[3], last_review=card[4], next_review=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
+                cards_list.append(card)
+            
+            return cards_list
+    
+    # - get_cards_open_failed(): get all cards that the next review is today or before and type is failed
+    def get_cards_open_failed(self):
+        with sqlite3.connect(self.namedb) as db:
+            cards = db.execute(
+                f"""
+                SELECT * FROM cards_table WHERE next_review <= '{self.helper.get_day_now()}' AND type = 'failed'
+                """
+            ).fetchall()
+        
+        if cards is None:
+            return None
+        else:
+            #--- Creat Cards
+            cards_list = []
+            for card in cards:
+                card = Card(front=card[1], back=card[2], type=card[3], last_review=card[4], next_review=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
+                cards_list.append(card)
+            
+            return cards_list

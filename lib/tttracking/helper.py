@@ -101,12 +101,18 @@ class Helper():
         current_time_str = current_time.strftime("%d %B %Y")
         return current_time_str
     
-    def get_day_timestamp(self, date_str):
+    def get_day_timestamp(self, date_str= None):
+        if date_str == None:
+            date_str = self.get_day_now()
+
         date = datetime.datetime.strptime(date_str, "%d %B %Y")
         return int(date.timestamp())
     def get_timestamp(self, time):
         date = datetime.datetime.strptime(time, "%Y-%B-%d %H:%M:%S")
         return int(date.timestamp())
+    
+    def convert_timestamp_to_date(self, timestamp):
+        return datetime.datetime.fromtimestamp(timestamp).strftime("%d %B %Y")
     
     def get_current_day(self):
         """

@@ -1,4 +1,5 @@
 from .helper import Helper
+
 helper = Helper()
 
 
@@ -180,6 +181,81 @@ class FinCategory():
         return int(self.budget)
     def get_id(self):
         return self.id
+
+class Card():
+    # CARD CLASS STRUCTURE:
+    # - Card: [id, front, back, type, last_review, next_review, interval, nreviews, nfailed]
+    # update_review(success= True): 
+    #   if success == True:
+    #       update card after correct answer - interval = interval * 2 (update next_review)
+    #   if success == False:
+    #       update card after failed answer -  interval = 1 (update next_review)
+
+    def __init__(self, front, back, last_review= None, next_review= None, type= "new", interval= 1, nreviews= 0, nfailed= 0, id= None):
+        self.helper = Helper()
+
+        #--- Card Basic Informations
+        self.id = id
+        self.front = front
+        self.back = back
+        self.interval = interval
+        self.nreviews = nreviews
+        self.nfailed = nfailed
+        self.type = type
+
+        #--- Next Review
+        if next_review == None:
+            self.next_review = self.helper.get_day_now()
+        else:
+            self.next_review = next_review
+
+        #--- Last Review
+        if last_review == None:
+            self.last_review = self.helper.get_day_now()
+        else:
+            self.last_review = last_review
     
+    # --------------------- Update Methods ---------------------
+    def update_review(self, success= True):
+        #--- Update last review
+        self.last_review = self.helper.get_day_now()
+
+        #--- Update card settings
+        if success:
+            self.interval *= 2
+            self.nreviews += 1
+            self.type = "learning"
+        else:
+            self.interval = 0
+            self.nfailed += 1
+            self.type = "failed"
+
+        #--- Update next review (integer)
+        self.next_review = self.helper.get_day_timestamp() + self.interval * 86400
+
+        #--- Convert timestamp (integer) to day string
+        self.next_review = self.helper.convert_timestamp_to_date(self.next_review)
+
+        return self.next_review
+
+    # --------------------- Get Methods ---------------------
+    def get_id(self):
+        return self.id
+    def get_front(self):
+        return self.front
+    def get_back(self):
+        return self.back
+    def get_last_review(self):
+        return self.last_review
+    def get_next_review(self):
+        return self.next_review
+    def get_interval(self):
+        return self.interval
+    def get_nreviews(self):
+        return self.nreviews
+    def get_nfailed(self):
+        return self.nfailed
+    def get_type(self):
+        return self.type
     
-    
+        

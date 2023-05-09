@@ -1,6 +1,7 @@
 #--- Import Trackings ---#
 from .trackingTT import TTtracker
 from .TrackingFin import FinTracker
+from .TrackingLearn import LearnTracker 
 
 class Tracker():
     def __init__(self, name):
@@ -14,6 +15,8 @@ class Tracker():
                 tracking = TTtracker(f"Task {self.name}")
             elif self.next_tracking == "fin":
                 tracking = FinTracker(f"Finan {self.name}")
+            elif self.next_tracking == "learn":
+                tracking = LearnTracker(f"Learn {self.name}")
 
             #--- Run the tracking
             self.next_tracking = tracking.run()

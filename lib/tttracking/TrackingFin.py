@@ -129,7 +129,7 @@ class FinTracker():
                 self.helper.printer(f"[ERROR] Category '{category_name}' does not exist.", color='red')
                 return
             
-            type = category[2]
+            type = category.get_type()
 
             #--- Take current time
             datestr = self.helper.get_day_now()
@@ -210,3 +210,6 @@ class FinTracker():
             self.commands[args[0]](secondary_command)
         else:
             self.helper.printer(f"[ERROR] Command {command} not found", color='red')
+
+
+            
