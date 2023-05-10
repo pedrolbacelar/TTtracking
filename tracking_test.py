@@ -5,7 +5,7 @@ myTT.run()
 """
 from lib.tttracking.Tracker import Tracker
 
-mytracker = Tracker("Tracker")
+mytracker = Tracker("")
 mytracker.run()
 
 

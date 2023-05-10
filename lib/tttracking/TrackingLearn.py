@@ -94,10 +94,10 @@ class LearnTracker:
             #--- Get the front card
             front = " ".join(secondary_command)
             #--- Get the back card
-            back = input("Insert Back >>> ")
+            back = input(f"\033[33m Insert Back >>> \033[0m ")
 
             #--- Create a card object
-            new_card = Card(front, back, "new")
+            new_card = Card(front, back)
 
             #--- Add the card to the database
             self.cards_interfaceDB.insert_card(new_card)
@@ -127,11 +127,13 @@ class LearnTracker:
         #--- Check if the card exists
         if card is not None:
             #--- Check if the card is a learning card
-            if card.type == "learning":
-                #--- Show the front card
-                self.helper.printer(card.front, color='brown')
-                #--- Say the front card
-                self.say(card.front)
+            #--- Show the front card
+            self.helper.printer(f"Card Front: {card.front}", color='brown')
+            #--- Say the front card
+            self.say(card.front)
+
+            repeat = True
+            while repeat:
 
                 #--- Wait for the user input
                 status = input(">>> ")
@@ -141,19 +143,31 @@ class LearnTracker:
                     #--- Update the card
                     next_review = card.update_review(success= True)
                     self.helper.printer(f"Card Successfully Updated. Next Review at {next_review}", color='green')
+                    #--- Update card in the table
+                    self.cards_interfaceDB.update_card(card)
+                    repeat = False
+                
                 elif status == "r":
                     print("Saying the card again...")
                     #--- Say the front card
                     self.say(card.front)
+                    #--- Update card in the table
+                    self.cards_interfaceDB.update_card(card)
+                    repeat = True
+
                 elif status == "f":
+                    self.helper.printer(f"Card Back: {card.back}", color='brown')
                     #--- Update the card
                     next_review=  card.update_review(success= False)
                     self.helper.printer(f"Card Failed. Next Review at {next_review}", color='red')
 
+                    #--- Update card in the table
+                    self.cards_interfaceDB.update_card(card)
+
+                    repeat = False
+
                 else:
                     self.helper.printer("[ERROR] Status not found", color='red')
-            else:
-                self.helper.printer("[ERROR] Card is not a learning card", color='red')
         else:
             self.helper.printer("[ERROR] Card not found", color='red')
         
@@ -172,11 +186,11 @@ class LearnTracker:
 
             #--- Get the cards from the database
             if card_type == "new":
-                cards = self.cards_interfaceDB.get_cards_new()
+                cards = self.cards_interfaceDB.get_cards_open_new()
             elif card_type == "learning":
-                cards = self.cards_interfaceDB.get_cards_learning()
+                cards = self.cards_interfaceDB.get_cards_open_learning()
             elif card_type == "failed": 
-                cards = self.cards_interfaceDB.get_cards_failed()
+                cards = self.cards_interfaceDB.get_cards_open_failed()
             
         else:
             #--- Get all the cards from the database
@@ -185,9 +199,10 @@ class LearnTracker:
         #--- Check if there are cards
         if len(cards) > 0:
             #--- Print the cards
+            self.helper.printer("Showing all open cards:")
+            print("   CARD IDs   |   CARD NAME")
+
             for card in cards:
-                self.helper.printer("Showing all open cards:")
-                print("   CARD IDs   |   CARD NAME")
                 card_id = card.get_id()
                 if card_id < 10:
                     print(f"       {card_id}      |   \033[35m{card.get_type()}\033[0m - {card.get_front()}")

@@ -222,6 +222,8 @@ class Card():
 
         #--- Update card settings
         if success:
+            if self.interval == 0:
+                self.interval = 1
             self.interval *= 2
             self.nreviews += 1
             self.type = "learning"
@@ -257,5 +259,60 @@ class Card():
         return self.nfailed
     def get_type(self):
         return self.type
+
+"""
+------ Objects structure: ------
+Habbit object:
+- name
+- status (True or False) : The habbit was fulfilled or not
+- comment
+- id
+
+Day object:
+- comment
+- id
+"""
+
+class Habbit():
+    def __init__(self, name, status= None, comment= None, id= None, day= None):
+        self.helper = Helper()
+        self.name = name
+        self.status = status
+        self.comment = comment
+        self.id = id
+        if day == None:
+            self.day = self.helper.get_day_now()
+        else:
+            self.day = day
     
-        
+    # --------------------- Get Methods ---------------------
+    def get_name(self):
+        return self.name
+    def get_status(self):
+        return self.status
+    def get_comment(self):
+        return self.comment
+    def get_id(self):
+        return self.id
+    def get_day(self):
+        return self.day
+
+class Day():
+    def __init__(self, comment= None, id= None, day= None):
+        self.helper = Helper()
+        self.comment = comment
+        self.id = id
+        if day == None:
+            self.day = self.helper.get_day_now()
+        else:
+            self.day = day
+
+    
+    # --------------------- Get Methods ---------------------
+    def get_comment(self):
+        return self.comment
+    def get_id(self):
+        return self.id
+    def get_day(self):
+        return self.day
+    

@@ -1,6 +1,6 @@
 import sqlite3
 from .helper import Helper
-from .components import Task, FinEvent, FinCategory, Card
+from .components import Task, FinEvent, FinCategory, Card, Habbit, Day
 
 class interfaceDB():
     def __init__(self, name):
@@ -16,6 +16,9 @@ class interfaceDB():
         
         elif name == "learn":
             self.namedb = f"databases/LearnTracking.db"
+        
+        elif name == "habbit":
+            self.namedb = f"databases/HabbitTracking.db"
 
         self.helper.create_file("databases")
         
@@ -35,7 +38,12 @@ class interfaceDB():
     
         if name == "learn":
             self.create_cards_table()
-    
+
+        if name == "habbit":
+            self.create_habbits_table()
+            self.create_days_table()
+
+
     # ============== TASK MANAGEMENT ==============
     # --- create a tasks table ---
     def create_task_table(self):
@@ -414,6 +422,24 @@ class interfaceDB():
                 """, (front, back, last_review, next_review, type, interval, nreviews, nfailed)
             )
     
+    def update_card(self, card):
+        with sqlite3.connect(self.namedb) as db:
+            card_id = card.get_id()
+            front = card.get_front()
+            back = card.get_back()
+            type = card.get_type()
+            last_review = card.get_last_review()
+            next_review = card.get_next_review()
+            interval = card.get_interval()
+            nreviews = card.get_nreviews()
+            nfailed = card.get_nfailed()
+
+            db.execute(
+                """
+                UPDATE cards_table SET front = ?, back = ?, last_review = ?, next_review = ?, type = ?, interval = ?, nreviews = ?, nfailed = ? WHERE card_id = ?
+                """, (front, back, last_review, next_review, type, interval, nreviews, nfailed, card_id)
+            )
+
     def get_card(self, card_id):
         with sqlite3.connect(self.namedb) as db:
             card = db.execute(
@@ -425,7 +451,7 @@ class interfaceDB():
         if card is None:
             return None
         else:
-            card = Card(front=card[1], back=card[2], type=card[3], last_review=card[4], next_review=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
+            card = Card(front=card[1], back=card[2], last_review=card[3], next_review=card[4], type=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
             # front, back, last_review= None, next_review= None, type= "new", interval= 1, nreviews= 0, nfailed= 0, card_id= None
             # front, back, last_review, next_review, type, interval, nreviews, nfailed
             return card
@@ -433,7 +459,7 @@ class interfaceDB():
     def get_card_open_random(self):
         with sqlite3.connect(self.namedb) as db:
             card = db.execute(
-                """
+                f"""
                 SELECT * FROM cards_table WHERE next_review <= '{self.helper.get_day_now()}' ORDER BY RANDOM() LIMIT 1
                 """
             ).fetchone()
@@ -441,7 +467,7 @@ class interfaceDB():
         if card is None:
             return None
         else:
-            card = Card(front=card[1], back=card[2], type=card[3], last_review=card[4], next_review=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
+            card = Card(front=card[1], back=card[2], last_review=card[3], next_review=card[4], type=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
             # front, back, last_review= None, next_review= None, type= "new", interval= 1, nreviews= 0, nfailed= 0, card_id= None
             # front, back, last_review, next_review, type, interval, nreviews, nfailed
             return card
@@ -461,7 +487,7 @@ class interfaceDB():
             #--- Creat Cards
             cards_list = []
             for card in cards:
-                card = Card(front=card[1], back=card[2], type=card[3], last_review=card[4], next_review=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
+                card = Card(front=card[1], back=card[2], last_review=card[3], next_review=card[4], type=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
                 cards_list.append(card)
             
             return cards_list
@@ -481,7 +507,7 @@ class interfaceDB():
             #--- Creat Cards
             cards_list = []
             for card in cards:
-                card = Card(front=card[1], back=card[2], type=card[3], last_review=card[4], next_review=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
+                card = Card(front=card[1], back=card[2], last_review=card[3], next_review=card[4], type=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
                 cards_list.append(card)
             
             return cards_list
@@ -501,7 +527,7 @@ class interfaceDB():
             #--- Creat Cards
             cards_list = []
             for card in cards:
-                card = Card(front=card[1], back=card[2], type=card[3], last_review=card[4], next_review=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
+                card = Card(front=card[1], back=card[2], last_review=card[3], next_review=card[4], type=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
                 cards_list.append(card)
             
             return cards_list
@@ -521,7 +547,135 @@ class interfaceDB():
             #--- Creat Cards
             cards_list = []
             for card in cards:
-                card = Card(front=card[1], back=card[2], type=card[3], last_review=card[4], next_review=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
+                card = Card(front=card[1], back=card[2], last_review=card[3], next_review=card[4], type=card[5], interval=card[6], nreviews=card[7], nfailed=card[8], id=card[0])
                 cards_list.append(card)
             
             return cards_list
+        
+    # ==================== Habbits ====================
+    """
+    ------ Database structure: ------
+    Habbits_table [id, name, status, comment, day]
+    Days_table [id, comment, day]
+    TODO:
+    1. create table for habbts
+    2. create table for days
+    3. insert habbit into the habbits table
+    4. insert day into the days table
+    5. show existing habbits
+    6. show existing days
+    7. show comments and other columns of a especific habbit
+    """
+
+    def create_habbits_table(self):
+        with sqlite3.connect(self.namedb) as db:
+            db.execute(
+                """
+                CREATE TABLE IF NOT EXISTS habbits_table (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    comment TEXT NOT NULL,
+                    day TEXT NOT NULL
+                )
+                """
+            )
+    def create_days_table(self):
+        with sqlite3.connect(self.namedb) as db:
+            db.execute(
+                """
+                CREATE TABLE IF NOT EXISTS days_table (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    comment TEXT NOT NULL,
+                    day TEXT NOT NULL
+                )
+                """
+            )
+
+    def insert_habbit(self, habbit):
+        name = habbit.get_name()
+        status = habbit.get_status()
+        comment = habbit.get_comment()
+        day = habbit.get_day()
+        with sqlite3.connect(self.namedb) as db:
+            db.execute(
+                f"""
+                INSERT INTO habbits_table (name, status, comment, day) VALUES ('{name}', '{status}', '{comment}', '{day}')
+                """
+            )
+    def insert_day(self, day):
+        comment = day.get_comment()
+        day = day.get_day()
+        with sqlite3.connect(self.namedb) as db:
+            db.execute(
+                f"""
+                INSERT INTO days_table (comment, day) VALUES ('{comment}', '{day}')
+                """
+            )
+    def show_all_habbits(self):
+        with sqlite3.connect(self.namedb) as db:
+            habbits = db.execute(
+                """
+                SELECT * FROM habbits_table
+                """
+            ).fetchall()
+        if habbits is None:
+            return None
+        else:
+            #--- Creat Habbits
+            habbits_list = []
+            for habbit in habbits:
+                habbit = Habbit(name=habbit[1], status=habbit[2], comment=habbit[3], day=habbit[4], id=habbit[0])
+                habbits_list.append(habbit)
+            
+            return habbits_list
+        
+    def show_days(self):
+        with sqlite3.connect(self.namedb) as db:
+            days = db.execute(
+                """
+                SELECT * FROM days_table
+                """
+            ).fetchall()
+        if days is None:
+            return None
+        else:
+            #--- Creat Days
+            days_list = []
+            for day in days:
+                day = Day(comment=day[1], day=day[2], id=day[0])
+                days_list.append(day)
+            
+            return days_list
+    
+    def show_from_habbit(self, habbit):
+        with sqlite3.connect(self.namedb) as db:
+            habbit = db.execute(
+                f"""
+                SELECT * FROM habbits_table WHERE name = '{habbit.get_name()}'
+                """
+            ).fetchone()
+        if habbit is None:
+            return None
+        else:
+            #--- Creat Habbits
+            habbit = Habbit(name=habbit[1], status=habbit[2], comment=habbit[3], day=habbit[4], id=habbit[0])
+            return habbit
+
+    #--- Get unique habbits names
+    def get_unique_habbits_names(self):
+        with sqlite3.connect(self.namedb) as db:
+            habbits = db.execute(
+                """
+                SELECT DISTINCT name FROM habbits_table
+                """
+            ).fetchall()
+        if habbits is None:
+            return None
+        else:
+            #--- Creat Habbits
+            habbits_list = []
+            for habbit in habbits:
+                habbits_list.append(habbit[0])
+            
+            return habbits_list
