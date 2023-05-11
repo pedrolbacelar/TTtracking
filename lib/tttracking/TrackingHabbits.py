@@ -62,6 +62,7 @@ class HabbitsTracker():
             "create": self.command_create_habbit,
             "myday": self.command_myday,
             "show": self.command_show,
+            "help": self.command_help,
             "switch": self.command_switch,
             "kill": self.command_kill,
         }
@@ -82,6 +83,19 @@ class HabbitsTracker():
         return self.next_tracking
     
     # ------- Commands -------
+
+    def command_help(self, secondary_command):
+        self.helper.printer("Helping you!")
+        print("|--- \033[33mcreate\033[0m <habbit_name>")
+        print("|--- \033[33mmyday\033[0m <comment>")
+        print("|--- \033[33mshow\033[0m habbits")
+        print("|--- \033[33mshow\033[0m habbit <name>")
+        print("|--- \033[33mshow\033[0m days")
+        print("|--- \033[33mshow\033[0m day <id>")
+        print("|--- \033[33mswitch\033[0m <tracking>")
+        print("|--- \033[33mkill\033[0m")
+
+        
     
     def command_create_habbit(self, secondary_command):
         """
