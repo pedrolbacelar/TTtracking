@@ -138,8 +138,8 @@ class Task():
         self.worked_time_clean = clean_tme
     def set_manual_edited(self):
         (tsrt, t) = self.helper.get_time_now()
-        self.start_string = f"edited - {tsrt}"
-        self.end_string = f"edited - {tsrt}"
+        self.start_string = f"{tsrt}"
+        self.end_string = f"{tsrt}"
 
 class FinEvent():
     def __init__(self, name, category, type, value, date, id= None):

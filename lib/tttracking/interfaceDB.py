@@ -176,6 +176,25 @@ class interfaceDB():
 
             return tasks
 
+    def get_all_worked_time_of_cluster(self, cluster_name):
+        with sqlite3.connect(self.namedb) as db:
+            worked_time = db.execute(
+                """
+                SELECT SUM(worked_clean) FROM task_table WHERE cluster = ?
+                """,(cluster_name,)
+            ).fetchone()[0]
+
+            return worked_time
+
+    def get_period_worked_time_of_cluster(self, cluster_name, start, end):
+        with sqlite3.connect(self.namedb) as db:
+            worked_time = db.execute(
+                """
+                SELECT SUM(worked_clean) FROM task_table WHERE cluster = ? AND start_string >= ? AND end_string <= ?
+                """,(cluster_name, start, end)
+            ).fetchone()[0]
+
+            return worked_time
 
     # ================================================
 

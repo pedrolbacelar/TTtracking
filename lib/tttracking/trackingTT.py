@@ -1,5 +1,6 @@
 from .interfaceDB import interfaceDB
 from .components import Task
+from .plotter import Plotter
 from .helper import Helper
 
 class TTtracker():
@@ -12,6 +13,7 @@ class TTtracker():
         self.working_task = None
         self.cluster_adding = None
 
+        self.plotter = Plotter("Plotter")
         # ----- Database Management -----
         self.task_interfaceDB = interfaceDB("task")
         self.cluster_interfaceDB = interfaceDB("cluster")
@@ -29,6 +31,7 @@ class TTtracker():
             "myday": self.command_myday,
             "switch": self.command_switch,
             "set": self.command_set,
+            "plot": self.command_plot,
             "help": self.command_help,
             "kill": self.command_kill
         }
@@ -479,7 +482,19 @@ class TTtracker():
         except:
             self.helper.printer(f"[ERROR] Something went wrong while setting the task with ID: {secondary_command[0]} to clean time: {secondary_command[1]}", 'red')
 
-        
+    def command_plot(self, secondary_commnad):
+        """
+        Plot commands:
+        - plot: plot the whole overview of all the clusters (how many minutes worked for each cluster, maybe a pizza or area graph or bar graph)
+        - plot evolution: plot the number of tasks and amount of hours worked each day 
+        """        
+        if len(secondary_commnad) == 0:
+            #--- Plot the whole overview of all the clusters
+            self.plotter.plot_clusters_overview()
+        elif secondary_commnad[0] == 'evolution':
+            #--- Plot the evolution of the time worked
+            self.plotter.plot_evolution()
+
 
     def command_kill(self, secondary_command):
 
