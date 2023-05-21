@@ -187,11 +187,23 @@ class interfaceDB():
             return worked_time
 
     def get_period_worked_time_of_cluster(self, cluster_name, start, end):
+        start = self.helper.convert_SQL_date(start)
+        end = self.helper.convert_SQL_date(end)
+        
         with sqlite3.connect(self.namedb) as db:
             worked_time = db.execute(
                 """
-                SELECT SUM(worked_clean) FROM task_table WHERE cluster = ? AND start_string >= ? AND end_string <= ?
+                SELECT SUM(worked_clean) FROM task_table WHERE cluster = ? AND start_string >= date(?) AND end_string <= date(?)
                 """,(cluster_name, start, end)
+            ).fetchone()[0]
+
+            return worked_time
+    def get_day_worked_time_of_cluster(self, cluster_name, day):
+        with sqlite3.connect(self.namedb) as db:
+            worked_time = db.execute(
+                """
+                SELECT SUM(worked_clean) FROM task_table WHERE cluster = ? AND start_string LIKE ?
+                """,(cluster_name, day)
             ).fetchone()[0]
 
             return worked_time

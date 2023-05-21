@@ -123,6 +123,17 @@ class Helper():
         """
         current_date = dtime.now().strftime("%d %B %Y")
         return current_date 
+
+    def get_current_and_previous_day(self):
+        """
+        Returns the current day and the previous day in the format "%d %B %Y".
+
+        Returns:
+            str: The current day and the previous day in the format "%d %B %Y".
+        """
+        current_date = dtime.now().strftime("%d %B %Y")
+        previous_date = (dtime.now() - datetime.timedelta(days=1)).strftime("%d %B %Y")
+        return current_date, previous_date
     
     def convert_date_string(self, date_str):
         """
@@ -136,6 +147,11 @@ class Helper():
         """
         date_obj = dtime.strptime(date_str, "%Y-%B-%d %H:%M:%S")
         return date_obj.strftime("%d %B %Y")
+    
+    def convert_SQL_date(self,date):
+        parsed_date = datetime.strptime(date, "%d %B %Y")
+        formatted_date = parsed_date.strftime("%Y-%m-%d")
+        return formatted_date
 
     # --- create a function that takes the current day and give
     # back the first day and last day of the week, considering that
