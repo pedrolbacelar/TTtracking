@@ -1,5 +1,5 @@
 from IPython.display import Markdown, display
-#from playsound import playsound
+from playsound import playsound
 import os
 
 #--- Common Libraries
@@ -57,11 +57,14 @@ class Helper():
             }
 
         #--- Construct the sounds paths
-        """self.sounds = {
+        self.sounds = {
             'red': os.path.join(self.dir_path, 'sound', 'error.mp3'),
             'green': os.path.join(self.dir_path, 'sound', 'success.mp3'),
-            'yellow': os.path.join(self.dir_path, 'sound', 'warning.mp3') 
-        }"""
+            'yellow': os.path.join(self.dir_path, 'sound', 'warning.mp3'),
+            'clock': os.path.join(self.dir_path, 'sound', 'clock alarm.mp3'),
+            'tick': os.path.join(self.dir_path, 'sound', 'tick tack.mp3'),
+            'sirene': os.path.join(self.dir_path, 'sound', 'sirene alert.mp3'), 
+        }
     
     #--- Printing with colors
     def printer(self, text, color= 'yellow', time= False, play= True):
@@ -78,6 +81,15 @@ class Helper():
             
             else:
                 display(Markdown(f"{self.colors[color]}{text}{self.Reset}"))
+
+    def play(self, sound= 'tick'):
+        try:
+            playsound(self.sounds[sound])
+        except KeyError:
+            self.printer(f"Sound {sound} not found", color= 'red')
+            print("Available sounds: ")
+            for key in self.sounds.keys():
+                print(f" - {key}")
 
     #--- Get all the internal colors
     def get_colors(self):
@@ -149,7 +161,7 @@ class Helper():
         return date_obj.strftime("%d %B %Y")
     
     def convert_SQL_date(self,date):
-        parsed_date = datetime.strptime(date, "%d %B %Y")
+        parsed_date = dtime.strptime(date, "%d %B %Y")
         formatted_date = parsed_date.strftime("%Y-%m-%d")
         return formatted_date
 

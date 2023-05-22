@@ -4,6 +4,7 @@ from .TrackingFin import FinTracker
 from .TrackingLearn import LearnTracker 
 from .TrackingHabbits import HabbitsTracker
 from .helper import Helper
+from .pomodoro import Pomodoro
 
 class Tracker():
     def __init__(self, name):
@@ -38,6 +39,15 @@ class Tracker():
                 self.tracking = HabbitsTracker(f"Myday {self.name}")
                 self.flag_run = True
             
+            elif self.next_tracking == "pomodoro":
+                self.tracking = Pomodoro(
+                    pomodoro_time= 25,
+                    break_time= 5,
+                    maxtime= 60
+                )
+                self.flag_run = True
+
+
             else:
                 self.helper.printer(f"[ERROR] '{self.next_tracking}' is not a valid tracking", "red")
                 self.next_tracking = self.previous_tracking

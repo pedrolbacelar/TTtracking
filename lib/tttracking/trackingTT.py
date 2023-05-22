@@ -2,6 +2,7 @@ from .interfaceDB import interfaceDB
 from .components import Task
 from .plotter import Plotter
 from .helper import Helper
+from time import sleep
 
 class TTtracker():
     def __init__(self,name):
@@ -35,6 +36,20 @@ class TTtracker():
             "help": self.command_help,
             "kill": self.command_kill
         }
+
+        # ----- Timers -----
+        #--- Pomodoro configuration
+        self.pomodoro_time = 30 * 60 # 25 minutes
+        self.short_break = 5 * 60 # 5 minutes
+        self.long_break = 15 * 60 # 15 minutes
+        self.maxtime = 60 * 60 # 60 minutes
+        self.maxtime = 10
+
+        #--- Pointers
+        self.last_time = self.helper.get_time_now()[1]
+        self.accumulated_time = 0
+
+
 
 
     def run(self):
@@ -491,9 +506,13 @@ class TTtracker():
         if len(secondary_commnad) == 0:
             #--- Plot the whole overview of all the clusters
             self.plotter.plot_clusters_overview()
-        elif secondary_commnad[0] == 'evolution':
+        elif secondary_commnad[0] == 'week':
             #--- Plot the evolution of the time worked
-            self.plotter.plot_evolution()
+            self.plotter.plot_clusters_week()
+
+        else:
+            self.helper.printer(f"[ERROR] The sub-command '{secondary_commnad[0]}' is not valid.", 'red')
+
 
 
     def command_kill(self, secondary_command):
@@ -516,6 +535,10 @@ class TTtracker():
 
     # ===================== HELPING FUNCTIONS =====================
     
+                
+                
+
+
     def extractor(self, command):
         """
         Extract all the words of the command phrase
