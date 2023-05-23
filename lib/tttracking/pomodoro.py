@@ -1,14 +1,16 @@
 from .helper import Helper
 from time import sleep
 
+
 class Pomodoro:
     def __init__(self, pomodoro_time, break_time, maxtime):
         self.helper = Helper()
-        self.pomodoro_time = pomodoro_time
-        self.break_time = break_time
-        self.maxtime = maxtime
+        self.pomodoro_time = pomodoro_time * 60
+        self.break_time = break_time * 60
+        self.maxtime = maxtime * 60
         self.accumulated_time = 0
         self.last_time = self.helper.get_time_now()[1]
+        self.rest_time = 60*(2.5)
         
     def run(self):
         """
@@ -29,9 +31,9 @@ class Pomodoro:
                 self.accumulated_time = self.helper.get_time_now()[1] - self.last_time
 
                 #----- PRINTING -----
-                if self.accumulated_time % 10 == 0:
+                if self.accumulated_time % 60 == 0:
                     sleep(1)
-                    print(f"pomodoro >>> {self.accumulated_time} minutes")
+                    print(f"pomodoro >>> {round(self.accumulated_time/60)} minutes")
 
                 #--- Check if the accumulated time is higher than the max time
                 if self.accumulated_time > self.maxtime:
@@ -88,6 +90,7 @@ class Pomodoro:
                         else:
                             self.helper.printer(f"[ERROR] The input '{feedback}' is not valid. Please try again.", time= True, color= 'red')
 
+                sleep(self.rest_time)
                 
         except KeyboardInterrupt:
             return "task"
