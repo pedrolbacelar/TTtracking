@@ -59,7 +59,8 @@ class interfaceDB():
                 cluster TEXT,
                 start_string TEXT,
                 end_string TEXT,
-                targeted_time INTEGER
+                start_int INTEGER,
+                end_int INTEGER
                 )
                 """
             )
@@ -150,11 +151,19 @@ class interfaceDB():
         start_string= task.get_start_string()
         end_string = task.get_end_string()
 
+        start_int = None
+        end_int = None 
+
+        if start_string:
+            start_int = self.helper.convert_daystr_to_timestamp(start_string)
+        if end_string:
+            end_int = self.helper.convert_daystr_to_timestamp(end_string)
+
         with sqlite3.connect(self.namedb) as db:
             db.execute(
                 """
                 UPDATE task_table SET name=?, worked_clean=?, total_stop=?, tags=?,
-                cluster=?, start_string=?, end_string= ? WHERE task_id= ?""",(
+                cluster=?, start_string= ?, end_string= ?, start_int=?, end_int= ? WHERE task_id= ?""",(
                 name,
                 worked_clean,
                 total_stop,
@@ -162,6 +171,8 @@ class interfaceDB():
                 cluster,
                 start_string,
                 end_string,
+                start_int,
+                end_int,
                 id
                 )
             )
@@ -200,14 +211,18 @@ class interfaceDB():
 
             return worked_time
         """
+        start_int = self.helper.convery_day_to_timestamp(start)
+        end_int = self.helper.convery_day_to_timestamp(end)
+
         with sqlite3.connect(self.namedb) as db:
             worked_time = db.execute(
                 """
-                SELECT SUM(worked_clean) FROM task_table WHERE cluster = ? AND start_string >= (?) AND end_string <= (?)
-                """,(cluster_name, start, end)
+                SELECT SUM(worked_clean) FROM task_table WHERE cluster = ? AND start_int >= (?) AND end_int <= (?)
+                """,(cluster_name, start_int, end_int)
             ).fetchone()[0]
 
             return worked_time
+        
     def get_day_worked_time_of_cluster(self, cluster_name, day):
         with sqlite3.connect(self.namedb) as db:
             worked_time = db.execute(

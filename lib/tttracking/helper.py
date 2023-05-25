@@ -143,7 +143,7 @@ class Helper():
         Returns:
             str: The current day and the previous day in the format "%d %B %Y".
         """
-        current_date = dtime.now().strftime("%d %B %Y")
+        current_date = (dtime.now() + datetime.timedelta(days=1)).strftime("%d %B %Y")
         previous_date = (dtime.now() - datetime.timedelta(days=1)).strftime("%d %B %Y")
         return current_date, previous_date
     
@@ -164,6 +164,21 @@ class Helper():
         parsed_date = dtime.strptime(date, "%d %B %Y")
         formatted_date = parsed_date.strftime("%Y-%m-%d")
         return formatted_date
+    
+    def convert_daystr_to_timestamp(self, date_str):
+        """
+        Takes the date string in the format of "%d %B %Y %H:%M:%S" and returns the timestamp.
+        """
+
+        date_obj = dtime.strptime(date_str, "%d %B %Y %H:%M:%S")
+        return int(date_obj.timestamp())
+    
+    def convery_day_to_timestamp(self, date_str):
+        """
+        Takes the date string in the format of "%d %B %Y" and returns the timestamp.
+        """
+        date_obj = dtime.strptime(date_str, "%d %B %Y")
+        return int(date_obj.timestamp())
 
     # --- create a function that takes the current day and give
     # back the first day and last day of the week, considering that

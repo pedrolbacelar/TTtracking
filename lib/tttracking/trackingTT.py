@@ -510,6 +510,9 @@ class TTtracker():
             #--- Plot the evolution of the time worked
             self.plotter.plot_clusters_week()
 
+        elif secondary_commnad[0] == 'day':
+            self.plotter.plot_clusters_day()
+
         else:
             self.helper.printer(f"[ERROR] The sub-command '{secondary_commnad[0]}' is not valid.", 'red')
 

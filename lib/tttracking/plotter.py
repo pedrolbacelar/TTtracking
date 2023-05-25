@@ -85,6 +85,16 @@ class Plotter():
         fig = go.Figure(data=[go.Pie(labels=list(cluster_worked_clean.keys()), values=list(cluster_worked_clean.values()))])
         
         fig.update_layout(title='Clusters Week Overview (hours)', title_x=0.5)
+        
+        # Add a subtitle to the plot
+        subtitle_text = f"[{first_week_day} to {last_week_day}]"
+        fig.add_annotation(
+            xref='paper', yref='paper',
+            x=0.5, y=1.1,
+            text=subtitle_text,
+            showarrow=False,
+            font=dict(size=16)
+)
         fig.show() 
 
     def plot_clusters_day(self):
@@ -122,4 +132,13 @@ class Plotter():
         fig = go.Figure(data=[go.Pie(labels=list(cluster_worked_clean.keys()), values=list(cluster_worked_clean.values()))])
         
         fig.update_layout(title='Clusters Day Overview (hours)', title_x=0.5)
+        # Add a subtitle to the plot
+        subtitle_text = f"[{previous_day} to {current_day}]"
+        fig.add_annotation(
+            xref='paper', yref='paper',
+            x=0.5, y=1.1,
+            text=subtitle_text,
+            showarrow=False,
+            font=dict(size=16)
+        )
         fig.show()
