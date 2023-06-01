@@ -41,7 +41,8 @@ class LearnTracker:
             command = input(f"{self.name}>>> ")
 
             #--- Parse command into the correct functions
-            self.parse_command(command)
+            if command != "":
+                self.parse_command(command)
 
         #--- Switch to the next tracking
         return self.next_tracking
@@ -211,6 +212,7 @@ class LearnTracker:
                 elif card_id > 99:
                     print(f"     {card_id}      |   \033[35m{card.get_type()}\033[0m - {card.get_front()}")
 
+            self.helper.printer(f"Total number of cards to review: {len(cards)}", color='brown')
         else:
             self.helper.printer("[ERROR] No cards found", color='red')
 

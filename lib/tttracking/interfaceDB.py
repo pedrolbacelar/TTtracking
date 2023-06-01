@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 from .helper import Helper
 from .components import Task, FinEvent, FinCategory, Card, Habbit, Day
 
@@ -490,10 +491,13 @@ class interfaceDB():
             nreviews = card.get_nreviews()
             nfailed = card.get_nfailed()
 
+            date_obj = datetime.strptime(next_review, "%d %B %Y")
+            next_review_int = int(date_obj.timestamp())
+
             db.execute(
                 """
-                UPDATE cards_table SET front = ?, back = ?, last_review = ?, next_review = ?, type = ?, interval = ?, nreviews = ?, nfailed = ? WHERE card_id = ?
-                """, (front, back, last_review, next_review, type, interval, nreviews, nfailed, card_id)
+                UPDATE cards_table SET front = ?, back = ?, last_review = ?, next_review = ?, type = ?, interval = ?, nreviews = ?, nfailed = ?, next_review_int= ? WHERE card_id = ?
+                """, (front, back, last_review, next_review, type, interval, nreviews, nfailed, next_review_int, card_id)
             )
 
     def get_card(self, card_id):
@@ -514,9 +518,14 @@ class interfaceDB():
     
     def get_card_open_random(self):
         with sqlite3.connect(self.namedb) as db:
+
+            date_obj = datetime.strptime(self.helper.get_day_now(), "%d %B %Y")
+            day_int = int(date_obj.timestamp())
+            print(f"day_int: {day_int}")
+
             card = db.execute(
                 f"""
-                SELECT * FROM cards_table WHERE next_review <= '{self.helper.get_day_now()}' ORDER BY RANDOM() LIMIT 1
+                SELECT * FROM cards_table WHERE next_review_int <= '{day_int}' ORDER BY RANDOM() LIMIT 1
                 """
             ).fetchone()
         
@@ -531,9 +540,13 @@ class interfaceDB():
     # - get_cards_opens() : get all cards that the next review is today or before
     def get_cards_opens(self):
         with sqlite3.connect(self.namedb) as db:
+            date_obj = datetime.strptime(self.helper.get_day_now(), "%d %B %Y")
+            day_int = int(date_obj.timestamp())
+            print(f"day_int: {day_int}")
+
             cards = db.execute(
                 f"""
-                SELECT * FROM cards_table WHERE next_review <= '{self.helper.get_day_now()}'
+                SELECT * FROM cards_table WHERE next_review_int <= '{day_int}'
                 """
             ).fetchall()
         

@@ -77,7 +77,8 @@ class HabbitsTracker():
             command = input(f"{self.name}>>> ")
 
             #--- Parse command into the correct functions
-            self.parse_command(command)
+            if command != "":
+                self.parse_command(command)
 
         #--- Switch to the next tracking
         return self.next_tracking

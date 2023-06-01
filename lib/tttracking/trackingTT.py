@@ -59,15 +59,16 @@ class TTtracker():
             command = input(f"{self.name}>>> ")
 
             #--- Extracts the words
-            (main_command, secondary_command) = self.extractor(command)
+            if command != "":
+                (main_command, secondary_command) = self.extractor(command)
 
-            #--- Assign the right function
-            try:
-                self.commands_store[main_command](secondary_command)
-            except KeyError:
-                self.helper.printer(f"------ [ERROR] '{main_command}' is not an available command! ------", 'red')
-                self.commands_store["help"](secondary_command)
-
+                #--- Assign the right function
+                try:
+                    self.commands_store[main_command](secondary_command)
+                except KeyError:
+                    self.helper.printer(f"------ [ERROR] '{main_command}' is not an available command! ------", 'red')
+                    self.commands_store["help"](secondary_command)
+            
         #--- Just to confirm
         if self.alive == False:
             return self.next_tracking
