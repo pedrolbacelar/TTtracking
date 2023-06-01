@@ -212,8 +212,15 @@ class interfaceDB():
 
             return worked_time
         """
-        start_int = self.helper.convery_day_to_timestamp(start)
-        end_int = self.helper.convery_day_to_timestamp(end)
+        if type(start) == str:
+            start_int = self.helper.convery_day_to_timestamp(start)
+        else:
+            start_int = start
+            
+        if type(end) == str:
+            end_int = self.helper.convery_day_to_timestamp(end)
+        else:
+            end_int = end
 
         with sqlite3.connect(self.namedb) as db:
             worked_time = db.execute(
@@ -234,6 +241,31 @@ class interfaceDB():
 
             return worked_time
 
+    def get_first_day(self):
+        with sqlite3.connect(self.namedb) as db:
+            first_day = db.execute(
+                """
+                SELECT start_string, start_int FROM task_table where task_id = 1
+                """
+            ).fetchone()
+
+            return first_day
+    
+    def get_last_day(self):
+        with sqlite3.connect(self.namedb) as db:
+            last_day = db.execute(
+                """
+                SELECT end_string, end_int
+                FROM task_table
+                WHERE task_id = (
+                SELECT MAX(task_id)
+                FROM task_table
+                WHERE end_string IS NOT NULL
+                )
+                """
+            ).fetchone()
+
+            return last_day
     # ================================================
 
     # ============== CLUSTER - TAG MANAGEMENT ==============
@@ -472,11 +504,14 @@ class interfaceDB():
             nreviews = card.get_nreviews()
             nfailed = card.get_nfailed()
 
+            date_obj = datetime.strptime(next_review, "%d %B %Y")
+            next_review_int = int(date_obj.timestamp())
+
             db.execute(
                 """
-                INSERT INTO cards_table (front, back, last_review, next_review, type, interval, nreviews, nfailed)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """, (front, back, last_review, next_review, type, interval, nreviews, nfailed)
+                INSERT INTO cards_table (front, back, last_review, next_review, type, interval, nreviews, nfailed, next_review_int)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (front, back, last_review, next_review, type, interval, nreviews, nfailed, next_review_int)
             )
     
     def update_card(self, card):

@@ -513,6 +513,53 @@ class TTtracker():
 
         elif secondary_commnad[0] == 'day':
             self.plotter.plot_clusters_day()
+        
+        elif secondary_commnad[0] == 'linear':
+            #--- mode and targeted cluster ---#
+            command_length = len(secondary_commnad)
+
+            #--- Without mode and targeted cluster ---#
+            if len(secondary_commnad) == 1:
+                self.plotter.plot_clusters_evolution()
+
+            elif len(secondary_commnad) > 1:
+                #--- Plots with accumulative mode ---#
+                if secondary_commnad[1] == "acc":
+                    if command_length == 2:
+                        self.plotter.plot_clusters_evolution(mode="accumulated")
+                    else:
+                        clusters_names = []
+
+                        #--- Add clusters names into a list
+                        for element in secondary_commnad[2:]:
+                            if self.check_clusters(element):
+                                clusters_names.append(element)
+                            else:
+                                self.helper.printer(f"[ERROR] The cluster '{element}' is not valid.", 'red')
+                                return
+                            
+                        #--- Plot the evolution of the time worked for the targeted clusters without mode
+                        self.plotter.plot_clusters_evolution(clusters_targeted=clusters_names, mode="accumulated")
+                        
+                #--- check to see if it's a normal plot without mode but if targeted ---#
+                elif self.check_clusters(secondary_commnad[1]):
+                    clusters_names = []
+
+                    #--- Add clusters names into a list
+                    for element in secondary_commnad[1:]:
+                        if self.check_clusters(element):
+                            clusters_names.append(element)
+                        else:
+                            self.helper.printer(f"[ERROR] The cluster '{element}' is not valid.", 'red')
+                            return
+                        
+                    #--- Plot the evolution of the time worked for the targeted clusters without mode
+                    self.plotter.plot_clusters_evolution(clusters_targeted=clusters_names)
+
+                else:
+                    self.helper.printer(f"[ERROR] The sub-command '{secondary_commnad[1]}' is not valid. It's not 'acc' to select the mode either it's a cluster", 'red')
+                    
+                    
 
         else:
             self.helper.printer(f"[ERROR] The sub-command '{secondary_commnad[0]}' is not valid.", 'red')
