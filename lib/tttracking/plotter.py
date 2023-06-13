@@ -203,7 +203,7 @@ class Plotter():
                     worked_time = 0
 
                 if cluster_name != "temp":
-                    if mode== "accumulated":
+                    if mode== "accumulated" or mode == "polimi":
                         if len(clusters_worked_time[cluster_name]) == 0:
                             clusters_worked_time[cluster_name].append(worked_time)
                         else:
@@ -217,9 +217,34 @@ class Plotter():
         
         #--- Convert to hours ---#
         for cluster_name in clusters_worked_time.keys():
+            
             for i in range(len(clusters_worked_time[cluster_name])):
                 clusters_worked_time[cluster_name][i] = round(clusters_worked_time[cluster_name][i]/3600, 2)
-        
+                
+
+
+        #--- POLIMI Mode ---#
+        if mode== "polimi":
+            clusters_worked_time["polimi"] = []
+            iterated_clusters = 0
+            for cluster_name in clusters_worked_time.keys():
+                #--- Sum the polimi worked time ---#
+                if cluster_name == "socialent" or cluster_name == "leadership" or cluster_name == "operation" or cluster_name == "bie" or cluster_name == "plathinking":
+                    for i in range(len(clusters_worked_time[cluster_name])):
+                        if iterated_clusters == 0:
+                            clusters_worked_time["polimi"].append(clusters_worked_time[cluster_name][i])
+                        else:
+                            clusters_worked_time["polimi"][i] += clusters_worked_time[cluster_name][i]
+
+                    #--- Add iterated clusters ---#
+                    iterated_clusters += 1
+
+            #--- Delete the other clusters ---#
+            polimi = ["socialent", "leadership", "operation", "bie", "plathinking"]
+            for cluster_name in polimi:
+                clusters_worked_time.pop(cluster_name)
+  
+
         #--- Plotting ---#
         fig = go.Figure()
 

@@ -540,7 +540,12 @@ class TTtracker():
                             
                         #--- Plot the evolution of the time worked for the targeted clusters without mode
                         self.plotter.plot_clusters_evolution(clusters_targeted=clusters_names, mode="accumulated")
-                        
+
+                #--- Polimi Mode ---#
+                elif secondary_commnad[1] == "polimi":
+                    self.plotter.plot_clusters_evolution(mode="polimi")
+
+
                 #--- check to see if it's a normal plot without mode but if targeted ---#
                 elif self.check_clusters(secondary_commnad[1]):
                     clusters_names = []

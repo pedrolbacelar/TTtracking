@@ -556,7 +556,6 @@ class interfaceDB():
 
             date_obj = datetime.strptime(self.helper.get_day_now(), "%d %B %Y")
             day_int = int(date_obj.timestamp())
-            print(f"day_int: {day_int}")
 
             card = db.execute(
                 f"""
