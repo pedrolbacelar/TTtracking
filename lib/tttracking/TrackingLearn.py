@@ -213,6 +213,7 @@ class LearnTracker:
                     print(f"     {card_id}      |   \033[35m{card.get_type()}\033[0m - {card.get_front()}")
 
             self.helper.printer(f"Total number of cards to review: {len(cards)}", color='brown')
+            self.helper.printer(f"Expected Time to Review: {len(cards)*0.5} minutes", color='brown')
         else:
             self.helper.printer("[ERROR] No cards found", color='red')
 
