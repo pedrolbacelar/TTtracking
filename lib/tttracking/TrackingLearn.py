@@ -13,6 +13,7 @@ class LearnTracker:
         self.voice = voice
         self.alive = True
         self.next_tracking = "task"
+        self.pace = 0.33
 
         #--- Init engine
         self.engine = pyttsx3.init()
@@ -30,6 +31,7 @@ class LearnTracker:
             "review": self.command_review,
             "show": self.command_show,
             "switch": self.command_switch,
+            "drop": self.command_drop,
             "kill": self.command_kill
         }
 
@@ -213,7 +215,7 @@ class LearnTracker:
                     print(f"     {card_id}      |   \033[35m{card.get_type()}\033[0m - {card.get_front()}")
 
             self.helper.printer(f"Total number of cards to review: {len(cards)}", color='brown')
-            self.helper.printer(f"Expected Time to Review: {len(cards)*0.5} minutes", color='brown')
+            self.helper.printer(f"Expected Time to Review: {round(len(cards)*self.pace)} minutes", color='brown')
         else:
             self.helper.printer("[ERROR] No cards found", color='red')
 
@@ -234,6 +236,33 @@ class LearnTracker:
 
     def command_kill(self, secondary_command):
         self.helper.kill(self.name)
+
+    def command_drop(self, secondary_command):
+        """
+        drop <card_id> (drop a specific card)
+        """
+
+        #--- Check if the secondary command is not empty
+        if len(secondary_command) > 0:
+            #--- Get the card id
+            card_id = secondary_command[0]
+
+            #--- Get the card from the database
+            card = self.cards_interfaceDB.get_card(card_id)
+
+            #--- Check if the card exists
+            if card is not None:
+                #--- Drop the card
+                self.cards_interfaceDB.drop_card(card_id)
+                self.helper.printer(f"Card {card_id} dropped", color='brown')
+            else:
+                self.helper.printer("[ERROR] Card not found", color='red')
+
+        
+        else:
+            self.helper.printer("[ERROR] Command drop needs a card id", color='red')
+
+        
 
     # --------- Helping Functions ------------
     def parse_command(self, command):

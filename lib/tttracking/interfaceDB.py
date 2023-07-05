@@ -464,7 +464,7 @@ class interfaceDB():
             
             return finevents
 
-    # ============== CARD MANAGEMENT ==============
+    # ===================================== CARD MANAGEMENT =====================================
     # DATABASE STRUCTURE:
     # - cards_table: [card_id, front, back, type, last_review, next_review, interval, nreviews, nfailed]
     # Database Functions:
@@ -654,7 +654,15 @@ class interfaceDB():
                 cards_list.append(card)
             
             return cards_list
-        
+    
+    # - drop_card(): delete the card from the database
+    def drop_card(self, card_id):
+        with sqlite3.connect(self.namedb) as db:
+            db.execute(
+                f"""
+                DELETE FROM cards_table WHERE card_id = '{card_id}'
+                """
+            )
     # ==================== Habbits ====================
     """
     ------ Database structure: ------
