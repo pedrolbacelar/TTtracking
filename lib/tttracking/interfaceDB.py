@@ -266,6 +266,14 @@ class interfaceDB():
             ).fetchone()
 
             return last_day
+    
+    def drop_task(self, id):
+        with sqlite3.connect(self.namedb) as db:
+            db.execute(
+                """
+                DELETE FROM task_table WHERE task_id=?
+                """,(id,)
+            )
     # ================================================
 
     # ============== CLUSTER - TAG MANAGEMENT ==============

@@ -2,6 +2,7 @@ import pyttsx3
 from .helper import Helper
 from .interfaceDB import interfaceDB
 from .components import Card   
+from time import sleep
 
 class LearnTracker:
     def __init__(self, name, rate=130, voice='it-it'):
@@ -114,65 +115,87 @@ class LearnTracker:
         review <card_id> (front card) (reviewed a specific card)
         """
 
-        #--- Check if the secondary command is not empty
-        if len(secondary_command) > 0:
-            #--- Get the card id
-            card_id = secondary_command[0]
+        review = True
+        while review:
+            #--- Check if the secondary command is not empty
+            if len(secondary_command) > 0:
+                #--- Get the card id
+                card_id = secondary_command[0]
 
-            #--- Get the card from the database
-            card = self.cards_interfaceDB.get_card(card_id)
-        
-        else:
-            print("Revieweing a random card...")
-            #--- Get a random card from the database
-            card = self.cards_interfaceDB.get_card_open_random()
+                #--- Get the card from the database
+                card = self.cards_interfaceDB.get_card(card_id)
+            
+            else:
+                print("Revieweing a random card...")
+                #--- Get a random card from the database
+                card = self.cards_interfaceDB.get_card_open_random()
+            
+            
 
-        #--- Check if the card exists
-        if card is not None:
-            #--- Check if the card is a learning card
-            #--- Show the front card
-            self.helper.printer(f"Card Front: {card.front}", color='brown')
-            #--- Say the front card
-            self.say(card.front)
+            #--- Check if the card exists
+            if card is not None:
+                #--- Small Break
+                sleep(1)
 
-            repeat = True
-            while repeat:
+                #--- Check if the card is a learning card
+                #--- Show the front card
+                self.helper.printer(f"Card Front: {card.front}", color='brown')
+                #--- Say the front card
+                self.say(card.front)
 
-                #--- Wait for the user input
-                status = input(">>> ")
+                repeat = True
+                while repeat:
 
-                #--- Check the status
-                if status == "":
-                    #--- Update the card
-                    next_review = card.update_review(success= True)
-                    self.helper.printer(f"Card Successfully Updated. Next Review at {next_review}", color='green')
-                    #--- Update card in the table
-                    self.cards_interfaceDB.update_card(card)
-                    repeat = False
-                
-                elif status == "r":
-                    print("Saying the card again...")
-                    #--- Say the front card
-                    self.say(card.front)
-                    #--- Update card in the table
-                    self.cards_interfaceDB.update_card(card)
-                    repeat = True
+                    #--- Wait for the user input
+                    status = input(">>> ")
 
-                elif status == "f":
-                    self.helper.printer(f"Card Back: {card.back}", color='brown')
-                    #--- Update the card
-                    next_review=  card.update_review(success= False)
-                    self.helper.printer(f"Card Failed. Next Review at {next_review}", color='red')
+                    #--- Check the status
+                    if status == "":
+                        #--- Update the card
+                        next_review = card.update_review(success= True)
+                        self.helper.printer(f"Card Successfully Updated. Next Review at {next_review}", color='green')
+                        #--- Update card in the table
+                        self.cards_interfaceDB.update_card(card)
+                        repeat = False
+                    
+                    elif status == "r":
+                        print("Saying the card again...")
+                        #--- Say the front card
+                        self.say(card.front)
+                        #--- Update card in the table
+                        self.cards_interfaceDB.update_card(card)
+                        repeat = True
 
-                    #--- Update card in the table
-                    self.cards_interfaceDB.update_card(card)
+                    elif status == "f":
+                        self.helper.printer(f"Card Back: {card.back}", color='brown')
+                        #--- Update the card
+                        next_review=  card.update_review(success= False)
+                        self.helper.printer(f"Card Failed. Next Review at {next_review}", color='red')
 
-                    repeat = False
+                        #--- Update card in the table
+                        self.cards_interfaceDB.update_card(card)
 
-                else:
-                    self.helper.printer("[ERROR] Status not found", color='red')
-        else:
-            self.helper.printer("[ERROR] Card not found", color='red')
+                        repeat = False
+
+                    elif status == "edit":
+                        #--- Get the new front text
+                        new_front = str(input("Enter the new front: "))
+
+                        #--- Update card object
+                        card.update_front(new_front)
+
+                        #--- Update database
+                        self.cards_interfaceDB.update_card(card)
+
+                    elif status == "exit":
+                        self.helper.printer("Exiting of the review...")
+                        repeat = False
+                        review = False
+
+                    else:
+                        self.helper.printer("[ERROR] Status not found", color='red')
+            else:
+                self.helper.printer("[ERROR] Card not found", color='red')
         
     def command_show(self, secondary_command):
         """

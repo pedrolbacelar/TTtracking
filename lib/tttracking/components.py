@@ -240,6 +240,11 @@ class Card():
 
         return self.next_review
 
+    def update_front(self, text):
+        self.front = text
+    
+    def update_back(self, text):
+        self.back = text 
     # --------------------- Get Methods ---------------------
     def get_id(self):
         return self.id

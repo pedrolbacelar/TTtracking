@@ -33,6 +33,7 @@ class TTtracker():
             "switch": self.command_switch,
             "set": self.command_set,
             "plot": self.command_plot,
+            "drop": self.command_drop,
             "help": self.command_help,
             "kill": self.command_kill
         }
@@ -569,7 +570,18 @@ class TTtracker():
         else:
             self.helper.printer(f"[ERROR] The sub-command '{secondary_commnad[0]}' is not valid.", 'red')
 
+    def command_drop(self, secondary_command):
+        """
+        Drop Commands:
+        drop <taks_id> : drop a task from the database
+        """
+        #--- Get the task id
+        task_id = secondary_command[0]
 
+        #--- Delete the task from the database
+        self.task_interfaceDB.drop_task(task_id)
+
+        self.helper.printer(f"Task with ID: {task_id} dropped from the database", 'brown')
 
     def command_kill(self, secondary_command):
 
@@ -590,10 +602,6 @@ class TTtracker():
         self.helper.kill(self.name)
 
     # ===================== HELPING FUNCTIONS =====================
-    
-                
-                
-
 
     def extractor(self, command):
         """
